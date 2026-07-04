@@ -72,11 +72,11 @@ export function ResultsScreen() {
             <button onClick={() => navigate(HOME_PATH)} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mb-7">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-7">
             {regions.map((r) => (
-              <div key={r.key} className={`p-4 rounded-2xl border transition-all ${!r.dim ? "border-foreground bg-foreground text-background ring-2 ring-foreground/10" : "border-border"}`}>
+              <div key={r.key} className={`p-3 sm:p-4 rounded-2xl border transition-all ${!r.dim ? "border-foreground bg-foreground text-background ring-2 ring-foreground/10" : "border-border"}`}>
                 <p className={`text-[10px] uppercase tracking-wider mb-2 ${!r.dim ? "text-background/50" : "text-muted-foreground"}`}>{t.regionMedian}</p>
-                <p className="text-2xl font-bold leading-none">{r.rate}<span className={`text-xs font-normal ${!r.dim ? "text-background/60" : "text-muted-foreground"}`}>/sa</span></p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{r.rate}<span className={`text-[10px] sm:text-xs font-normal ${!r.dim ? "text-background/60" : "text-muted-foreground"}`}>/sa</span></p>
                 <p className={`text-[11px] mt-2.5 font-medium ${!r.dim ? "text-background/70" : "text-muted-foreground"}`}>{r.name}</p>
               </div>
             ))}
