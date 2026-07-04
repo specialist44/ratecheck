@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN } from "../data/roles";
+import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_CATEGORY, getRoleCategory } from "../data/roles";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
@@ -11,6 +11,9 @@ import { loadHomeFormState, saveHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
+
+const EMPTY_TOOLS: string[] = [];
+const ALL_TOOLS = new Set(Object.values(TOOLS_BY_CATEGORY).flat());
 
 export function HomeScreen() {
   const t = useLang();
@@ -26,9 +29,16 @@ export function HomeScreen() {
   const [country, setCountry] = useState(saved.country ?? "Türkiye");
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
 
+  const category = role ? getRoleCategory(role, lang) : null;
+  const tools = category ? TOOLS_BY_CATEGORY[category] : EMPTY_TOOLS;
+
   useEffect(() => {
     saveHomeFormState({ role, experience, currency, country, selectedChips });
   }, [role, experience, currency, country, selectedChips]);
+
+  useEffect(() => {
+    setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
+  }, [category]);
 
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
@@ -86,6 +96,19 @@ export function HomeScreen() {
                     </div>
                   </div>
                 ))}
+                {tools.length > 0 && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tools.map((chip) => (
+                        <button key={chip} onClick={() => toggleChip(chip)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                          {selectedChips.includes(chip) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -47,9 +47,41 @@ export const ROLE_DEFAULT_HOURS = [
 
 export const CHIPS_TR = [
   { group: "Sektör", items: ["Teknoloji","E-ticaret","Sağlık","Eğitim","Finans","Medya","Startup","Kurumsal"] },
-  { group: "Araçlar", items: ["Figma","Adobe Suite","React","WordPress","Shopify","Webflow"] },
 ];
 export const CHIPS_EN = [
   { group: "Sector", items: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"] },
-  { group: "Tools", items: ["Figma","Adobe Suite","React","WordPress","Shopify","Webflow"] },
 ];
+
+export type RoleCategory = "design" | "illustration" | "animation" | "development" | "content" | "video-photo";
+
+// Index-aligned with ROLES_TR / ROLES_EN / ROLE_DEFAULT_HOURS
+export const ROLE_CATEGORIES: RoleCategory[] = [
+  // Design
+  "design", "design", "design", "design",
+  // Illustration
+  "illustration", "illustration", "illustration", "illustration", "illustration", "illustration", "illustration",
+  // Animation
+  "animation", "animation", "animation", "animation", "animation", "animation", "animation",
+  // Development
+  "development", "development", "development", "development", "development",
+  // Content
+  "content", "content", "content", "content",
+  // Video & Photo
+  "video-photo", "video-photo", "video-photo",
+];
+
+export function getRoleCategory(role: string, lang: "tr" | "en"): RoleCategory | null {
+  const list = lang === "tr" ? ROLES_TR : ROLES_EN;
+  const index = list.indexOf(role);
+  return index === -1 ? null : ROLE_CATEGORIES[index];
+}
+
+// Tool names are the same in TR and EN, only the surrounding UI language differs.
+export const TOOLS_BY_CATEGORY: Record<RoleCategory, string[]> = {
+  design: ["Figma", "Adobe XD", "Sketch", "Adobe Illustrator", "Adobe Photoshop", "Canva"],
+  illustration: ["Procreate", "Adobe Illustrator", "Clip Studio Paint", "Photoshop"],
+  animation: ["After Effects", "Blender", "Cinema 4D", "Toon Boom", "Clip Studio Paint"],
+  development: ["React", "WordPress", "Shopify", "Webflow"],
+  content: ["Google Docs", "Notion", "Canva", "Ahrefs", "SEMrush", "Excel", "Word"],
+  "video-photo": ["Premiere Pro", "Final Cut Pro", "Lightroom", "DaVinci Resolve", "After Effects"],
+};
