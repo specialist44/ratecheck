@@ -196,6 +196,24 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 
 ---
 
+## 5 Temmuz 2026 — UI/UX ve Ürün Tasarımcısı paket verisi eklendi (3. rol)
+
+- Kullanıcı `roleId: "ui-ux-designer"` önerdi ama `roles.ts`'teki gerçek slug
+  `"ui-ux-product-designer"` (ROLE_IDS index 2, ROLES_TR "UI/UX ve Ürün Tasarımcısı") — doğru
+  slug kullanıldı.
+- Yeni `data/packages/uiUxDesigner.ts`: 4 kategori — UX Araştırma ve Analiz, Bilgi Mimarisi ve
+  İskelet, UI Tasarımı, Prototipleme ve Handoff — her biri 3 bölge × 3 deneyim = 9 veri noktası,
+  toplam 36. Veri doğrudan EUR verildi (TRY/USD çevrimi gerekmedi).
+- `data/packages/index.ts` registry'sine `"ui-ux-product-designer": UI_UX_DESIGNER_CATEGORIES`
+  eklendi.
+- 36 veri noktasının hepsi elle kontrol edildi: her kategoride junior<orta<uzman VE
+  Türkiye<Doğu Avrupa<Batı Avrupa sıralaması tutarlı, anomali yok.
+- `graphicDesigner.ts`, `brandDesigner.ts`, `roles.ts`, HomeScreen/ResultsScreen/PDF koduna
+  dokunulmadı.
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
 ## 5 Temmuz 2026 — Dil değiştirince seçimlerin kaybolması düzeltildi
 
 - Kök sebep remount/key sorunu DEĞİLDİ (App.tsx'te `key={lang}` yok, route değişmiyor).
