@@ -62,3 +62,30 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
   bu oturuma dahil edilmedi — kullanıcı isteğiyle sonraya bırakıldı.
 - Node/npm bu ortamda kurulu değildi, bu yüzden `tsc`/dev server ile otomatik test yapılamadı;
   kullanıcı tarayıcıda manuel test edecek.
+
+---
+
+## 4 Temmuz 2026 — Ana Sayfa hesaplayıcısı için yeni "paket fiyatlama" veri modeli (adım 1)
+
+- Saatlik hesaplayıcı tamamen kaldırılıp yerine rol → üst kategori (checkbox) → kademeli indirimli
+  paket fiyatı modeli gelecek. Bu oturumda sadece VERİ MODELİ + Grafik Tasarımcı test verisi
+  eklendi; HomeScreen/ResultsScreen UI'ı henüz değişmedi (sıradaki adım).
+- Yeni `src/app/data/packages/` klasörü: `types.ts` (`RoleCategoryDef`, `RoleCategorySet`,
+  `PackagePriceTable` — region×experience bazlı EUR baseline), `graphicDesigner.ts` (4 kategori:
+  Kurumsal Kimlik, Basılı Yayın/Editoryal, Ambalaj ve Promosyon, Statik Dijital Görseller),
+  `index.ts` (roleId → kategori listesi registry, `getRoleCategories()`).
+- Grafik Tasarımcı fiyatları kullanıcıdan TRY (Türkiye) ve USD (Doğu/Batı Avrupa) olarak geldi;
+  EUR baseline'a çevrildi: TRY / 53.3 (mevcut `CUR_RATE`), USD / 1.08 (kullanıcı onaylı kur).
+  Diğer 29 rol için registry'de kayıt yok, `getRoleCategories()` boş dizi döner (placeholder).
+- `src/app/data/roles.ts`'e `ROLE_IDS` (ROLES_TR/EN ile index-hizalı, dilden bağımsız stabil slug)
+  ve `getRoleId()` eklendi — packages verisi bu slug'larla anahtarlanıyor.
+- Yeni `src/app/lib/packagePricing.ts`: `resolveCategoryPrice()` (tablo + para birimi çevrimi) ve
+  `calculatePackageQuote()` (fiyata göre azalan sırada kademeli indirim: 2. kategori -%5, 3. -%10,
+  4. -%15, toplam indirim %30'u geçerse orantılı küçültülüyor). Kullanıcıyla netleştirilen karar:
+  indirim sırası tıklama sırası değil, **fiyata göre azalan** (deterministik, oyuna kapalı).
+- Eski saatlik kod (`BASE_HOURLY_EUR`, `hourlyRate()`, `getDefaultHours()`, `CHIPS_TR/EN`,
+  `TOOLS_BY_CATEGORY`, `ROLE_DEFAULT_HOURS`) BİLEREK silinmedi — HomeScreen/ResultsScreen yeni
+  akışa geçince ayrı bir adımda temizlenecek.
+- `npm run build` hatasız geçti (proje `tsc` içermiyor, tip kontrolü sadece `vite build` üzerinden).
+- Sıradaki adımlar (onay bekliyor): (2) HomeScreen'de rol/deneyim/bölge sonrası kategori checkbox
+  akışı, (3) ResultsScreen + PDF'in kategori listesi + kademeli indirimli toplamı göstermesi.

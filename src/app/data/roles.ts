@@ -52,6 +52,29 @@ export const CHIPS_EN = [
   { group: "Sector", items: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"] },
 ];
 
+// Stabil, dilden bağımsız slug'lar — packages/ veri modelinin anahtarı.
+// Index-aligned with ROLES_TR / ROLES_EN.
+export const ROLE_IDS = [
+  // Design
+  "ui-ux-designer", "graphic-designer", "brand-designer", "product-designer",
+  // Illustration
+  "illustrator", "character-designer", "concept-artist", "comic-artist", "childrens-book-illustrator", "digital-painter", "storyboard-artist",
+  // Animation
+  "2d-animator", "3d-animator", "motion-designer", "frame-by-frame-animator", "character-animator", "vfx-artist", "stop-motion-animator",
+  // Development
+  "web-developer", "frontend-developer", "backend-developer", "fullstack-developer", "mobile-app-developer",
+  // Content
+  "copywriter", "content-creator", "social-media-specialist", "seo-specialist",
+  // Video & Photo
+  "video-editor", "photographer", "podcast-producer",
+];
+
+export function getRoleId(role: string, lang: "tr" | "en"): string | null {
+  const list = lang === "tr" ? ROLES_TR : ROLES_EN;
+  const index = list.indexOf(role);
+  return index === -1 ? null : ROLE_IDS[index];
+}
+
 export type RoleCategory = "design" | "illustration" | "animation" | "development" | "content" | "video-photo";
 
 // Index-aligned with ROLES_TR / ROLES_EN / ROLE_DEFAULT_HOURS
