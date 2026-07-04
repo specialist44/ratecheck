@@ -38,7 +38,7 @@ export function HowItWorksScreen() {
               <h4 className="font-semibold text-sm mb-2">{t.dataTitle}</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">{t.dataDesc}</p>
             </div>
-            <a href="/seffaflik-raporu.pdf" download className="group p-6 bg-muted rounded-2xl block border border-transparent transition-all hover:bg-muted/70 hover:border-foreground/20 hover:shadow-md">
+            <a href="/seffaflik-raporu.pdf" download className="group p-6 bg-muted rounded-2xl block border border-transparent transition-all hover:bg-muted/70 hover:border-foreground/20 hover:shadow-md active:scale-95 active:bg-muted/70">
               <FileText size={18} className="mb-3 text-foreground" />
               <h4 className="font-semibold text-sm mb-2">{t.pdfInfoTitle}</h4>
               <p className="text-xs text-muted-foreground leading-relaxed mb-3">{t.pdfInfoDesc}</p>
