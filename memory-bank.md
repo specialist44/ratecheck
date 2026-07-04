@@ -196,6 +196,24 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 
 ---
 
+## 5 Temmuz 2026 — Marka Tasarımcısı paket verisi eklendi (2. rol)
+
+- Yeni `data/packages/brandDesigner.ts`: `roleId: "brand-designer"` (roles.ts'teki `ROLE_IDS`
+  slug'ıyla teyit edildi), 3 kategori — Strateji ve İsimlendirme, Ana Kimlik İnşası, Kılavuzlama —
+  her biri 3 bölge × 3 deneyim = 9 veri noktası, toplam 27. Veri doğrudan EUR olarak verildiği
+  için (Grafik Tasarımcı'daki gibi TRY/USD çevrimi gerekmedi) dosyanın üst yorumu buna göre yazıldı.
+  Kullanıcının verdiği örnek TL geri-çevrim rakamları tutarsızdı (junior<mid<senior sıralamasına
+  uymuyordu) — uydurma/yanlış bir yorum eklemek yerine atlandı, sadece "EUR baseline olarak
+  verildi" notu bırakıldı.
+- `data/packages/index.ts` registry'sine `"brand-designer": BRAND_DESIGNER_CATEGORIES` eklendi.
+- 27 veri noktasının hepsi elle kontrol edildi: her kategoride junior<orta<uzman VE
+  Türkiye<Doğu Avrupa<Batı Avrupa sıralaması tutarlı, anomali yok.
+- `graphicDesigner.ts`, `roles.ts`, HomeScreen/ResultsScreen/PDF koduna dokunulmadı (zaten
+  role-agnostic, roleId üzerinden otomatik bu yeni veriyi kullanıyor).
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
 ## 5 Temmuz 2026 — ResultsScreen'e para birimi seçici eklendi (kök sebep: hiç yoktu)
 
 - Kullanıcı "para birimi butonu tıklanıyor ama değişmiyor" dedi; kod incelemesinde ResultsScreen'de
