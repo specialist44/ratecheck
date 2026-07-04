@@ -13,7 +13,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">{t.footerTagline}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{t.footerCopy}</p>
         </div>
-        <a href="#" className="text-xs text-muted-foreground">LinkedIn</a>
+        <a href="#" className="inline-block py-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">LinkedIn</a>
       </div>
     </footer>
   );
