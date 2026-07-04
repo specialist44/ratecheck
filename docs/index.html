@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RateCheck — Geliştirme Yol Haritası</title>
+<style>
+  :root{
+    --bg:#0e1016;
+    --panel:#171a24;
+    --panel-2:#1d2130;
+    --line:#2a2f42;
+    --text:#e8e9ef;
+    --muted:#8b90a8;
+    --accent:#8b7bff;
+    --accent-soft:#8b7bff22;
+    --done:#5fd88f;
+    --done-soft:#5fd88f1a;
+    --pending:#5b6178;
+    --pending-soft:#5b617815;
+    --next:#f5b95c;
+    --next-soft:#f5b95c1f;
+    --warn:#ff8578;
+    --code-bg:#0b0d13;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:48px 20px 100px;}
+  header.hero{text-align:center;margin-bottom:36px;}
+  header.hero .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:10px;}
+  header.hero h1{font-size:clamp(28px,5vw,40px);margin:0 0 10px;letter-spacing:-.02em;font-weight:700;
+    background:linear-gradient(180deg,#fff,#b9b4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  header.hero p{color:var(--muted);margin:0;font-size:15px;}
+  header.hero .updated{margin-top:14px;font-size:12.5px;color:var(--muted);}
+  header.hero .updated span{color:var(--text);font-weight:600;}
+  .progress{display:flex;gap:6px;margin:28px 0 8px;flex-wrap:wrap;justify-content:center;}
+  .progress .pill{font-size:12px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);display:flex;align-items:center;gap:6px;color:var(--muted);white-space:nowrap;}
+  .progress .pill.done{border-color:var(--done);color:var(--done);background:var(--done-soft);}
+  .progress .pill.next{border-color:var(--next);color:var(--next);background:var(--next-soft);}
+  .progress .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .nextup{margin:32px 0 40px;padding:18px 20px;border-radius:var(--radius);background:var(--next-soft);border:1px solid #f5b95c40;}
+  .nextup .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--next);font-weight:700;margin-bottom:6px;}
+  .nextup p{margin:0;font-size:14.5px;color:var(--text);}
+  .nextup code{background:var(--code-bg);padding:2px 6px;border-radius:5px;font-size:13px;}
+  section.faz{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px 26px 22px;margin-bottom:20px;}
+  section.faz.done{border-color:#5fd88f33;}
+  section.faz.active{border-color:#f5b95c55;box-shadow:0 0 0 1px #f5b95c22;}
+  .faz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:4px;}
+  .faz-head h2{font-size:19px;margin:0;letter-spacing:-.01em;}
+  .faz-head .time{font-size:12px;color:var(--muted);margin-top:4px;}
+  .status{flex-shrink:0;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;margin-top:2px;}
+  .status.done{background:var(--done-soft);color:var(--done);}
+  .status.active{background:var(--next-soft);color:var(--next);}
+  .status.pending{background:var(--pending-soft);color:var(--pending);}
+  .steps{margin-top:16px;display:flex;flex-direction:column;gap:14px;}
+  .step{padding-left:30px;position:relative;}
+  .step .chk{position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:6px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .step.done .chk{background:var(--done);border-color:var(--done);color:#0e1016;font-weight:700;}
+  .step.pending .chk{color:transparent;}
+  .step.active .chk{border-color:var(--next);}
+  .step h3{margin:0 0 4px;font-size:14.5px;font-weight:600;}
+  .step p{margin:0 0 6px;font-size:13.8px;color:var(--muted);}
+  .step .note{margin-top:6px;font-size:13px;background:var(--panel-2);border-left:3px solid var(--accent);padding:9px 12px;border-radius:6px;color:#cfd0e0;}
+  .step .note b{color:var(--text);}
+  pre{background:var(--code-bg);border:1px solid var(--line);border-radius:9px;padding:11px 14px;overflow-x:auto;margin:8px 0;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:#c9e6ff;}
+  .step p code, .note code{background:var(--code-bg);padding:1px 6px;border-radius:5px;}
+  .golden{background:var(--accent-soft);border:1px solid #8b7bff40;border-radius:10px;padding:12px 14px;margin:14px 0 4px;font-size:13.5px;}
+  .golden b{color:var(--accent);}
+  .extra-fixes{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
+  .extra-fixes .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+  .extra-fixes ul{margin:0;padding-left:18px;font-size:13.5px;color:#cfd0e0;display:flex;flex-direction:column;gap:6px;}
+  .extra-fixes li b{color:var(--text);}
+  h2.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:44px 0 14px;text-align:center;}
+  .faq{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;margin-bottom:14px;}
+  .faq h3{font-size:15px;margin:0 0 6px;color:var(--text);}
+  .faq p{font-size:13.8px;color:var(--muted);margin:0;}
+  .faq p code{background:var(--code-bg);padding:1px 6px;border-radius:5px;color:#c9e6ff;}
+  footer{text-align:center;margin-top:50px;color:var(--muted);font-size:12.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">RateCheck</div>
+    <h1>Geliştirme Yol Haritası</h1>
+    <p>Şu andan yayına kadar, adım adım güncel durum ve rehber</p>
+    <div class="updated">Son güncelleme: <span>4 Temmuz 2026</span> — Site canlı, LinkedIn sayfası açıldı, arkadaş testinden gelen 5 bug düzeltildi; sıradaki durak domain satın alma</div>
+  </header>
+
+  <div class="progress">
+    <div class="pill done"><span class="dot"></span>Faz 0 — Bilgisayar</div>
+    <div class="pill done"><span class="dot"></span>Faz 1 — Klasör</div>
+    <div class="pill done"><span class="dot"></span>Faz 2 — Kurallar</div>
+    <div class="pill done"><span class="dot"></span>Faz 3 — İlk Çalıştırma</div>
+    <div class="pill done"><span class="dot"></span>Faz 4 — Geliştirme (7/7)</div>
+    <div class="pill done"><span class="dot"></span>Git &amp; Dosya Bölme</div>
+    <div class="pill done"><span class="dot"></span>Faz 5.1-5.2 — Yayında</div>
+    <div class="pill next"><span class="dot"></span>Faz 5.3-5.4 — Domain</div>
+    <div class="pill">Faz 6 — Sürdürme</div>
+  </div>
+
+  <div class="nextup">
+    <div class="label">Sıradaki adım</div>
+    <p><b>Faz 5.4 — Domain satın alma (~$12-15/yıl).</b> Site şu an canlı: <code>ratecheck-ebon.vercel.app</code>. GitHub, Vercel, LinkedIn şirket sayfası hepsi hazır ve bağlı. Domain alınınca: Vercel'e bağlanacak → LinkedIn/site linkleri güncellenecek → <code>noindex</code> kaldırılıp Google aramasına açılacak. Bu adımdan önce yapılacak ücretsiz iş kalmadı.</p>
+  </div>
+
+  <section class="faz done">
+    <div class="faz-head">
+      <div><h2>Faz 0 — Bilgisayarını Hazırlamak</h2><div class="time">~15 dakika, bir kere yapılır</div></div>
+      <div class="status done">Tamamlandı</div>
+    </div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>0.1 — Terminal nedir?</h3>
+        <p>PowerShell'e yazıp Enter'a basarak komut veriyorsun. Windows'ta zaten hazır geliyor.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>0.2 — Claude Code kuruldu</h3>
+        <p>Native kurulum yöntemiyle (Node.js gerektirmeden) kuruldu, doğrulandı: <code>v2.1.197</code></p>
+        <div class="note"><b>Yaşanan sorun &amp; çözüm:</b> İlk denemede Git eksikti, kurulum yarıda kaldı. Git for Windows kurulduktan sonra tekrar denendi, başarılı oldu. Sonra <code>claude</code> komutu "tanınmıyor" hatası verdi — PATH'e eklenmemiş olmasıydı. Ortam Değişkenleri → Path → <code>C:\Users\Ali\.local\bin</code> eklenerek çözüldü.</div></div>
+      <div class="step done"><div class="chk">✓</div><h3>0.3 — Git for Windows kuruldu</h3>
+        <p>git-scm.com üzerinden, tüm ekranlarda varsayılan ayarlarla kuruldu.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>0.4 — Claude Code'a giriş yapıldı</h3>
+        <p>Claude Pro hesabıyla ("Claude account with subscription") giriş başarılı.</p></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Faz 1 — Proje Klasörünü Kurmak</h2><div class="time">~10 dakika</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>Klasör oluşturuldu ve zip çıkarıldı</h3>
+        <p>Proje konumu: <code>C:\Users\Ali\Documents\RateCheck</code> — <code>src</code>, <code>package.json</code>, <code>guidelines</code>, <code>index.html</code> doğrulandı.</p></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Faz 2 — Claude Code'a Projeyi ve Kuralları Tanıtmak</h2><div class="time">~10 dakika</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>guidelines.md, memory-bank.md, project-goals.md eklendi</h3>
+        <p>Claude Code üçünü de okudu, kurallara uyacağını teyit etti. Sonradan "kod değişikliklerini kendi kendine tarayıcıda test etme" kuralı da eklendi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Claude Code kendi analizini yaptı — bizim tespitlerimizle birebir örtüştü</h3>
+        <p>Bulduğu eksikler: ResultsScreen sabit rakamlar gösteriyordu; PDF indirme işlevsiz; logo ekleme yok; rapor linki yok; iletişim formu işlevsiz; PackagesScreen ölü kod; App.tsx 800 satır kuralını aşmış.</p></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Faz 3 — Kodu İlk Kez Çalıştırıp Görmek</h2><div class="time">~5 dakika</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>Node.js kuruldu</h3>
+        <p>Projeyi çalıştırmak için gerekli olduğu ortaya çıktı (Claude Code'un kendisi için değil). nodejs.org'dan Windows Installer (.msi) ile kuruldu. Doğrulandı: <code>v24.18.0</code></p></div>
+      <div class="step done"><div class="chk">✓</div><h3><code>npm install</code> ve <code>npm run dev</code> çalıştırıldı</h3>
+        <p>RateCheck ilk kez tarayıcıda canlı görüldü — <code>http://localhost:5173</code></p></div>
+      <div class="step done"><div class="chk">✓</div><h3>İlk canlı test yapıldı</h3>
+        <p>Formda farklı rol/bölge/deneyim seçildiğinde Results ekranındaki rakamların gerçekten değiştiği doğrulandı.</p></div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Devam eden fazlar</h2>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Faz 4 — Eksikleri Sırayla Tamamlamak</h2><div class="time">Asıl geliştirme — 7 / 7 adım tamamlandı</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="golden"><b>Altın kural (hiç gevşetilmedi):</b> Her adımda TEK bir şey istendi, Claude Code bitirince tarayıcıda gerçekten test edildi, sonra sıradakine geçildi.</div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>4.1 — Ölü kodu temizlet</h3>
+        <p>PackagesScreen ve ilgili tüm kod kaldırıldı (hiçbir yerden çağrılmıyordu). Build sorunsuz geçti.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.2 — Saatlik hesaplama motorunu GERÇEK yap</h3>
+        <p>Home ekranındaki seçimler artık gerçekten Results'a taşınıyor, <code>hourlyRate()</code> gerçek çarpanlarla hesaplıyor. Sabit rakamlar kaldırıldı.</p>
+        <div class="note"><b>İyileştirme:</b> Proje süresi (saat) alanı önce Home'da düzenlenebilirdi — kullanıcının kendini yanıltıcı yüksek tutara inandırmasına izin verdiği fark edildi. Şimdi rol bazında piyasa ortalamasına göre <b>otomatik hesaplanıyor ve salt okunur</b>, Results ekranında gösteriliyor.</div></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.3 — PDF indirmeyi çalıştır</h3>
+        <p>jsPDF ile tamamen tarayıcı içinde (client-side) PDF üretimi eklendi.</p>
+        <div class="note"><b>Düzeltilen sorunlar:</b> Türkçe karakter bozulması — doğrulanmış Inter TTF fontu gömülerek çözüldü. Alt bilgi metninin taşması — satır kaydırma eklenerek çözüldü. Bir testte sorunlar "geri gelmiş" gibi göründü — <b>Ctrl+Shift+R</b> (sert yenileme) ile çözüldü, kod hatası değildi, tarayıcı önbelleğiydi.</div></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.4 — Logo ekleme (markalı dışa aktarım)</h3>
+        <p>Kullanıcı kendi logosunu (PNG/SVG) yükleyip PDF'in sağ üst köşesine ekleyebiliyor — tamamen tarayıcı içinde, sunucuya veri gitmeden.</p>
+        <div class="note"><b>Düzeltme:</b> İlk versiyonda yüklenen logo pikselli çıkıyordu. Canvas render çözünürlüğü ~300 DPI'a çıkarılarak keskinleştirildi.</div></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.5 — İletişim formunu gerçek yap</h3>
+        <p>Formspree ile bağlandı (<code>ratecheckdestek@gmail.com</code>). Stripe bağımlılığı getiren <code>@formspree/react</code> yerine, guidelines.md kuralına uyum için doğrudan <code>fetch()</code> ile entegre edildi. Gerçek test mesajı gönderildi, Gmail'e ulaştığı doğrulandı.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.6 — "Nasıl Çalışır?" rapor linkini ekle</h3>
+        <p>Şeffaflık raporu (<code>public/seffaflik-raporu.pdf</code>) hazırlanıp "PDF raporlar" kartına bağlandı. Kart başta sadece bilgi metni gibi duruyordu, tıklanabilir olduğu belli değildi — indirme ikonu, "PDF'i indir" linki, masaüstünde hover efekti, mobilde dokunma (active) efekti eklendi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>4.7 — Genel test turu</h3>
+        <p>Dark/Light mode, TR/EN geçişi, mobil görünüm tek tek kontrol edildi, hepsi sorunsuz.</p>
+        <div class="note"><b>Bulunan ve düzeltilen sorunlar:</b> "Medyan" ifadesi kullanıcı için anlaşılır olmadığından sitede ve anlık üretilen PDF raporunda "Ortalama" ile değiştirildi (şeffaflık raporu PDF'i hariç, o sabit dosya). Mobilde TR/EN ve tema ikonu hamburger menüsünün içine gizliydi — üst barda her zaman görünür hale getirildi. Küçük İş Kataloğu sayfası mobilde sıkışık/klostrofobikti — boşluklar ferahlatıldı, başlık ile para birimi seçici çakışıyordu — başlık alt alta düzene alındı, para birimi seçici BÖLGE/DENEYİM arasına, kendi başlığıyla ("PARA BİRİMİ SEÇİMİ") taşındı.</div></div>
+    </div>
+    <div class="extra-fixes">
+      <div class="label">Planda olmayan, oturum sırasında yapılan ek düzeltmeler</div>
+      <ul>
+        <li><b>RateCheck marka logosu:</b> Dünya'dan gelen SVG logo paketi Nav ve Footer'a entegre edildi — dark/light mode'a göre otomatik renk değişiyor.</li>
+        <li><b>Veri doğruluğu düzeltmesi (önemli):</b> Hakkımızda sayfasındaki sahte istatistikler ("Anket katılımcısı 4.800+", "Aylık kullanıcı 28.000+", Kuruluş 2023) kaldırıldı. Kuruluş yılı 2026 olarak düzeltildi.</li>
+        <li><b>"Anket" ifadesi düzeltmesi (önemli):</b> Sitede ve PDF'te 19 yerde geçen "gerçek freelancer anketlerinden derlenen" ifadesi kaldırıldı — gerçekte AI destekli piyasa araştırmasıyla veri toplanıyor, insan anketi yapılmıyor. Tüm metinler "güncel piyasa araştırmasından derlenen" diliyle güncellendi.</li>
+        <li><b>Bölge etiketi netleştirmesi:</b> "Ülke / Bölge" → "İşveren / Müşteri Bölgesi" + "İşi kimin için yapıyorsun?" açıklaması.</li>
+        <li><b>Nav menüsü:</b> "Hakkımızda" → "Hakkımızda / İletişim" oldu, ardından nav'ın hizalama sorunu düzeltildi.</li>
+        <li><b>Görsel ince ayarlar:</b> Kutu/kart arası boşluklar, footer ayracı, para birimi sembolleri (₺/€/£), sütun hizaları eşitlendi.</li>
+        <li><b>Caveman modu kuruldu:</b> Token tasarrufu için üçüncü parti bir eklenti (<code>JuliusBrussee/caveman</code>) kuruldu — sadece açıklama metinlerini kısaltıyor, kod kalitesini etkilemiyor.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Git Kurulumu &amp; Dosya Bölme</h2><div class="time">Planda yoktu, güvenlik ağı + kod düzeni için ara adım olarak eklendi</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="golden"><b>Neden şimdi:</b> App.tsx 1400+ satıra ulaşmıştı (800 satır kuralını aşmıştı) ve proje şu ana kadar hiç Git ile takip edilmiyordu — yani bozulma durumunda geri dönülecek bir kayıt noktası yoktu. Riskli bir refactor'a girmeden önce önce güvenlik ağı kuruldu.</div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>Git kuruldu ve ilk commit alındı</h3>
+        <p>Proje klasöründe <code>git init</code> ile depo başlatıldı, <code>.gitignore</code> oluşturuldu (<code>node_modules</code>, <code>dist</code>, <code>.env</code> hariç tutuldu), kullanıcı kimliği tanımlandı, ilk commit alındı: <code>78 dosya, 13.314 satır</code>.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>App.tsx analiz edilip bölünme planı çıkarıldı</h3>
+        <p>Claude Code'a önce hiçbir dosyaya dokunmadan sadece analiz yaptırıldı — 18 parçalık bir bölüm haritası ve taşıma sırası (bağımsız dosyalar önce, sayfalar sonra, App.tsx en son) çıkarıldı, onaylandıktan sonra uygulamaya geçildi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>1. Parti — Temel dosyalar</h3>
+        <p><code>types.ts</code>, <code>i18n/tr.ts</code>, <code>i18n/en.ts</code>, <code>i18n/LangContext.tsx</code>, <code>data/roles.ts</code>, <code>data/catalog.ts</code>, <code>lib/pricing.ts</code> ayrı dosyalara taşındı. App.tsx: 1403 → 1029 satır. Build temiz.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Ara düzeltme — Router &amp; kalıcılık (F5 / geri tuşu sorunu)</h3>
+        <p>Test sırasında iki önemli sorun fark edildi: (1) Chrome'un geri tuşu çalışmıyordu çünkü ekran geçişleri sadece React state'te tutuluyordu, URL hiç değişmiyordu; (2) sayfa yenilenince (F5) her şey sıfırlanıyordu — ana sayfaya dönüyor, dil TR'ye, tema light'a resetleniyordu.</p>
+        <div class="note"><b>Çözüm:</b> <code>react-router</code> ile gerçek URL tabanlı sayfalar kuruldu (<code>/</code>, <code>/sonuc</code>, <code>/katalog</code>, <code>/nasil-calisir</code>, <code>/hakkimizda</code>), sonuç ekranının verisi URL query parametrelerinde tutuldu. Dil ve tema tercihi <code>localStorage</code>'a kaydedilir oldu. Artık F5 yenileme ve tarayıcı geri/ileri tuşları doğru çalışıyor.</div></div>
+      <div class="step done"><div class="chk">✓</div><h3>2. Parti — Paylaşılan component'ler</h3>
+        <p><code>components/Nav.tsx</code>, <code>BackButton.tsx</code>, <code>Footer.tsx</code>, <code>NoticeBanner.tsx</code> ayrı dosyalara taşındı, kendi içlerinde <code>useNavigate</code>/<code>useLangCtx</code> kullanacak şekilde güncellendi (prop drilling yok). App.tsx: 1054 → 930 satır.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>3. Parti — Sayfa ekranları + PDF export</h3>
+        <p><code>pages/HomeScreen.tsx</code>, <code>ResultsScreen.tsx</code>, <code>CatalogScreen.tsx</code>, <code>HowItWorksScreen.tsx</code>, <code>AboutScreen.tsx</code> ve <code>lib/pdf.ts</code> (PDF export mantığı, 280 satır) ayrı dosyalara taşındı. App.tsx: 930 → <b>58 satır</b> — artık sadece route tanımları ve dil/tema kabuğundan (AppShell) oluşuyor.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Kapsamlı test + mobil dokunma efekti</h3>
+        <p>Her parti sonrası masaüstü ve mobilde ayrı ayrı test edildi: hesaplama, PDF indirme (logo dahil), dil/tema kalıcılığı, geri tuşu, filtreler — hepsi sorunsuz. Tek bulunan eksik: "Nasıl Çalışır?" sayfasındaki PDF kartında mobilde dokunma anında görsel geri bildirim yoktu (hover mobilde doğası gereği çalışmıyor) — <code>active:</code> state ile dokunma efekti eklendi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Sonuç</h3>
+        <p>App.tsx 1403 satırdan 58 satıra indi. Kod artık <code>types</code>, <code>i18n</code>, <code>data</code>, <code>lib</code>, <code>components</code>, <code>pages</code> klasörlerine mantıklı şekilde dağıtılmış durumda. Toplam 5 Git commit'i ile güvenlik ağı sağlam.</p></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Faz 5.1-5.2 — Yayına Alma</h2></div><div class="status done">Tamamlandı</div></div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>5.1 — GitHub'a yüklendi</h3>
+        <p>Private repository oluşturuldu: <code>github.com/specialist44/ratecheck</code>. Mevcut Git geçmişi (<code>git remote add origin</code> → <code>git push -u origin main</code>) sorunsuz aktarıldı.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>5.2 — Vercel'e bağlandı</h3>
+        <p>Hobby (ücretsiz) plan seçildi — Pro plan denemesine yanlışlıkla girilmemesi için "I'm working on personal projects" seçeneği işaretlendi. GitHub App izinleri sadece <code>ratecheck</code> reposuyla sınırlandırıldı (tüm depolara erişim verilmedi). Vite preset otomatik algılandı, ayar değiştirilmeden Deploy edildi.</p>
+        <div class="note"><b>Site artık canlı:</b> <code>https://ratecheck-ebon.vercel.app</code> — link ile herkes (domain almadan) erişip test edebiliyor. GitHub'a her <code>git push</code> yapıldığında Vercel otomatik olarak yeniden derleyip yayınlıyor, elle "Deploy" tuşuna basmaya gerek yok.</div></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>LinkedIn Şirket Sayfası</h2><div class="time">Planda yoktu, sosyal kanıt/tanıtım için eklendi</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>Şirket sayfası oluşturuldu</h3>
+        <p><code>linkedin.com/company/ratecheckapp</code> — "Şirket" türünde, "Kendi İşimde Çalışıyorum" organizasyon türüyle açıldı (isim çakışması olan sahipsiz "Listing Page" yerine temiz, sıfırdan sayfa tercih edildi). Logo ve banner yüklendi, slogan eklendi: "Freelancer'lar için piyasa verisine dayalı, adil ücret hesaplama aracı."</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Kişisel profile deneyim eklendi</h3>
+        <p>Ali'nin kişisel LinkedIn profiline "Founder & Product Builder @ ratecheckapp" deneyimi eklendi, şirket sayfasıyla bağlantılı — sayfanın "Kişiler" sekmesinde görünür hale geldi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>İlk gönderi paylaşıldı</h3>
+        <p>Kişisel hikaye tonunda ("bu ihtiyacı fark ettim, çözüm yaptım") bir duyuru metni hazırlanıp şirket sayfasından paylaşıldı, ardından kişisel profilden de tekrar paylaşılarak erişim genişletildi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Footer LinkedIn linki</h3>
+        <p>Site footer'ındaki Instagram/Twitter linkleri kaldırıldı (hesaplar henüz açılmadığı için) — sadece LinkedIn kaldı. Özel bir LinkedIn ikonu (dark/light tema destekli, iki ayrı SVG) eklendi; ilk SVG'lerde fazladan/kullanılmayan path olduğu için ikon bulanık ve hizası kayık görünüyordu, dosyalar sıkı bounding box'a kırpılarak düzeltildi. Link artık gerçek URL'ye gidiyor, yeni sekmede açılıyor.</p></div>
+    </div>
+  </section>
+
+  <section class="faz done">
+    <div class="faz-head"><div><h2>Arkadaş Testinden Gelen Düzeltmeler</h2><div class="time">Backend geliştirici bir arkadaş siteyi test etti, 5 gerçek sorun bulundu</div></div><div class="status done">Tamamlandı</div></div>
+    <div class="golden"><b>Neden önemli:</b> Bu 5 sorunun hiçbiri kendi testlerimizde fark edilmemişti — gerçek, "temiz gözle" bakan bir kullanıcının testi paha biçilemezdi.</div>
+    <div class="steps">
+      <div class="step done"><div class="chk">✓</div><h3>Ana sayfa seçimleri "Geri dön"de kayboluyordu</h3>
+        <p>Kullanıcı rol/deneyim seçip sonuç ekranına gidip "Geri dön" yapınca tüm seçimler sıfırlanıyordu. <code>homeFormState.ts</code> ile form durumu <code>sessionStorage</code>'a yazılıp okunur oldu.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Rol seçilmeden hesaplama yapılabiliyordu</h3>
+        <p>"Hiçbir şey seçmeden 'ücret önerisi göster' deyince de gösteriyor" — "Hesapla" butonu artık rol seçilmeden <code>disabled</code> (soluk, tıklanamaz) durumda.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Mobilde fiyat/birim taşması</h3>
+        <p>Bazı mobil cihazlarda bölge kutularındaki fiyat ("₺2772" gibi) kutunun kenarına yapışıp yanındaki "/sa" birimi kesiliyor/görünmüyordu. Dar ekranlarda (640px altı) font boyutu ve padding küçültüldü, taşma yerine gerekirse alt satıra sarma garantisi eklendi.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>Araçlar listesi her rol için aynıydı</h3>
+        <p>"Araçlar tüm roller için aynı, role göre dinamik gelmesi lazım" — roller 6 kategoriye ayrıldı (Tasarım, İllüstrasyon, Animasyon, Geliştirici, İçerik, Video & Fotoğraf), her kategori için ayrı, anlamlı araç listesi tanımlandı (örn. Geliştirici → React/WordPress/Shopify/Webflow, Tasarım → Figma/Adobe XD/Sketch/Illustrator/Photoshop/Canva). Rol değiştiğinde eski kategoriye ait geçersiz araç seçimleri otomatik temizleniyor.</p></div>
+      <div class="step done"><div class="chk">✓</div><h3>"+ Yeni hesaplama" eski seçimleri getiriyordu</h3>
+        <p>Form hafızası eklenince bu sefer "+ Yeni hesaplama" butonu da (yanlışlıkla) eski seçimleri getirmeye başladı. <code>clearHomeFormState()</code> eklenerek bu buton artık hafızayı temizleyip Ana sayfayı sıfırdan açıyor — "Geri dön" davranışına dokunulmadı, o hâlâ seçimleri koruyor.</p></div>
+    </div>
+  </section>
+
+  <section class="faz active">
+    <div class="faz-head"><div><h2>Faz 5.3-5.4 — Domain &amp; Son Adımlar</h2></div><div class="status active">Sırada</div></div>
+    <div class="steps">
+      <div class="step active"><div class="chk"></div><h3>5.4 — Domain satın al</h3><p>.com alan adı (~$12-15/yıl) — <b>tek ücretli adım</b>, herhangi bir domain sağlayıcıdan (Namecheap, GoDaddy vb.) alınabilir.</p></div>
+      <div class="step pending"><div class="chk"></div><h3>Domain'i Vercel'e bağla</h3><p>Vercel proje ayarlarından "Domains" bölümüne yeni domain eklenip DNS ayarları güncellenecek.</p></div>
+      <div class="step pending"><div class="chk"></div><h3>Linkleri güncelle</h3><p>LinkedIn şirket sayfasındaki Website alanı ve varsa başka yerlerdeki geçici <code>ratecheck-ebon.vercel.app</code> linkleri yeni domain ile değiştirilecek.</p></div>
+      <div class="step pending"><div class="chk"></div><h3>5.3 — noindex kaldır</h3><p>Domain bağlandıktan SONRA yapılacak (öncesinde yapılırsa Google geçici Vercel adresini indexler, gereksiz karışıklık olur). <code>index.html</code>'deki arama motorlarını engelleyen etiket kaldırılacak.</p></div>
+    </div>
+  </section>
+
+  <section class="faz">
+    <div class="faz-head"><div><h2>Faz 6 — Yayın Sonrası</h2></div><div class="status pending">Bekliyor</div></div>
+    <div class="steps">
+      <div class="step pending"><div class="chk"></div><h3>Veri güncelleme</h3><p>Periyodik, elle tetiklenen fiyat verisi tazeleme — Claude Code önce araştırıp kaynaklarıyla sunacak, onay olmadan dosya değiştirmeyecek.</p></div>
+      <div class="step pending"><div class="chk"></div><h3>Reklam entegrasyonu</h3><p>Kullanıcı gelmeye başlayınca ayrıca konuşulacak.</p></div>
+      <div class="step pending"><div class="chk"></div><h3>Diğer kategoriler için piyasa verisi</h3><p>Tasarım, İllüstrasyon, Animasyon, İçerik kategorileri ve 58/59 katalog kalemi için hâlâ güvenilir piyasa verisi yok — ikinci bir araştırma turu gerekebilir.</p></div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Notlar &amp; sık sorulanlar</h2>
+
+  <div class="faq"><h3>Git ve GitHub farkı ne?</h3>
+    <p><b>Git</b>: bilgisayarındaki proje klasörünün zaman makinesi. <b>GitHub</b>: Git kayıtlarının internete yedeklendiği, Vercel'in okuduğu site. Her şey Claude Code üzerinden, bilgisayarda yapılacak.</p></div>
+
+  <div class="faq"><h3>Docker kullanacak mıyız?</h3>
+    <p>Hayır. RateCheck tamamen frontend bir proje, Vercel kodu doğrudan GitHub'dan okuyup yayınlıyor. Docker hiçbir aşamada gerekmiyor.</p></div>
+
+  <div class="faq"><h3>Claude Code izin modları (Shift+Tab)</h3>
+    <p><b>Default</b>: her değişiklikte sorar. <b>Accept edits</b>: dosya değişikliklerini otomatik onaylar, riskli komutlarda yine sorar — kullanılan mod bu. Tam "hiç sorma" modu önerilmiyor.</p></div>
+
+  <div class="faq"><h3>"Caveman modu" nedir</h3>
+    <p>Claude'un açıklama metinlerini kısaltan üçüncü parti eklenti — kod kalitesini etkilemez. Kurulum: <code>/plugin marketplace add JuliusBrussee/caveman</code> → <code>/plugin install caveman@caveman</code> → <code>/reload-plugins</code></p></div>
+
+  <div class="faq"><h3>Effort / Thinking ayarı</h3>
+    <p>Basit adımlarda düşük effort + kapalı thinking yeterli, hız kazandırır. Kod/mantık içeren adımlarda yüksek effort önerilir.</p></div>
+
+  <div class="faq"><h3>Kullanım hakkı biterse ne olur?</h3>
+    <p>"Usage limit reached, resets at [saat]" mesajı çıkar. Dosyalara zarar gelmez. Belirtilen saatte devam et — <code>memory-bank.md</code> sayesinde kaldığın yerden sürer.</p></div>
+
+  <div class="faq"><h3>Tuhaf/bozuk bir sonuç görürsen önce ne yap?</h3>
+    <p>Kod değişikliği sonrası beklenmedik bir şey görürsen önce <b>Ctrl+Shift+R</b> (sert yenileme) dene — çoğu zaman tarayıcı önbelleğinden kaynaklanır.</p></div>
+
+  <div class="faq"><h3>VS Code "Restricted Mode" uyarısı çıkarsa?</h3>
+    <p>VS Code yeni açılan klasörlere güvenmediği için bazı özellikleri (Source Control dahil) kısıtlar. <b>Manage → Trust</b> ile kendi projene güvendiğini onaylaman yeterli, zararsız bir adım.</p></div>
+
+  <div class="faq"><h3>Her önemli değişiklikten sonra ne yapmalı?</h3>
+    <p><code>git add .</code> ve <code>git commit -m "..."</code> ile o anki çalışan hali kaydet. Bu bir "kayıt noktası" — bir şey bozulursa oraya geri dönülebilir. Küçük metin değişikliklerinde şart değil, ama dosya taşıma/bölme gibi riskli işlemlerden önce ve sonra mutlaka yapılmalı.</p></div>
+
+  <div class="faq"><h3><code>LF will be replaced by CRLF</code> uyarısı hata mı?</h3>
+    <p>Hayır. Windows ve Git'in satır sonu karakteri farkından kaynaklanan zararsız bir bilgilendirme, göz ardı edilebilir.</p></div>
+
+  <div class="faq"><h3>Vercel'de hangi planı seçmeliyim?</h3>
+    <p><b>"I'm working on personal projects" (Hobby)</b> seç — ücretsiz ve süresiz. "Commercial projects" (Pro) seçeneği $20 kredili ücretli deneme başlatıyor, yanlışlıkla seçilmemeli.</p></div>
+
+  <div class="faq"><h3><code>href="#"</code> linkine tıklayınca neden sayfa başına gidiyor?</h3>
+    <p>Bu normal bir tarayıcı davranışı, hata değil — <code>#</code> boş bir bağlantı yer tutucusudur (placeholder). Gerçek bir URL girildiğinde bu davranış otomatik olarak düzelir.</p></div>
+
+  <div class="faq"><h3>Neden noindex kaldırma işini domain almadan önce yapmıyoruz?</h3>
+    <p>Şimdi kaldırırsak Google, adresi geçici Vercel adresini (<code>ratecheck-ebon.vercel.app</code>) indexler; domain alınca da yeni adrese geçmesi gerekir. Bu gereksiz bir ara adım ve küçük bir kafa karışıklığı yaratır — o yüzden noindex kaldırma, domain bağlandıktan sonraya bırakıldı.</p></div>
+
+  <footer>RateCheck — Ali Özel &amp; Dünya Deniz Baş</footer>
+
+</div>
+</body>
+</html>
