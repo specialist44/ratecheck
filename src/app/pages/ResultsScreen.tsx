@@ -6,6 +6,7 @@ import type { Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CUR_SYMBOL, hourlyRate, getDefaultHours } from "../lib/pricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
+import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
 import type { PdfLogo } from "../lib/pdf";
 import { HOME_PATH } from "../routes";
@@ -69,7 +70,7 @@ export function ResultsScreen() {
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
               <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
             </div>
-            <button onClick={() => navigate(HOME_PATH)} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
+            <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
           </div>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-7">

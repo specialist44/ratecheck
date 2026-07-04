@@ -21,6 +21,14 @@ export function saveHomeFormState(state: HomeFormState) {
   }
 }
 
+export function clearHomeFormState() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // sessionStorage unavailable (private mode, disabled, etc.) — silently skip
+  }
+}
+
 // Guards against malformed/hand-edited storage falling back to undefined,
 // so callers can apply the same defaults HomeScreen used before.
 export function loadHomeFormState(): Partial<HomeFormState> {
