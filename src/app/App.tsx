@@ -1,5 +1,6 @@
-import { useState, useMemo, createContext, useContext } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useSearchParams } from "react-router";
 import { ArrowRight, Check, ChevronRight, Database, Download, FileText, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { jsPDF } from "jspdf";
 import logoBlack from "../assets/rate-check-logotype-black-rgb.svg";
@@ -7,398 +8,32 @@ import logoWhite from "../assets/rate-check-logotype-white-rgb.svg";
 import interRegularFontUrl from "../assets/fonts/Inter-Regular.ttf";
 import interBoldFontUrl from "../assets/fonts/Inter-Bold.ttf";
 
-type Screen = "home" | "results" | "how-it-works" | "about" | "catalog";
-type Lang = "tr" | "en";
-type Currency = "EUR" | "TRY" | "GBP";
-type Experience = "junior" | "mid" | "senior";
-type Region = "turkey" | "eastern" | "western";
+import type { Lang, Currency, Experience, Region } from "./types";
+import { LangCtx, useLang, useLangCtx } from "./i18n/LangContext";
+import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN } from "./data/roles";
+import { CATALOG } from "./data/catalog";
+import type { CatalogJob } from "./data/catalog";
+import { CUR_SYMBOL, formatPrice, hourlyRate, getDefaultHours, COUNTRY_REGION } from "./lib/pricing";
+import type { CalcInput } from "./lib/pricing";
+import { calcInputToSearchParams, calcInputFromSearchParams } from "./lib/calcInputQuery";
+import { HOME_PATH, RESULTS_PATH, CATALOG_PATH, HOW_IT_WORKS_PATH, ABOUT_PATH } from "./routes";
 
-// ─── i18n ─────────────────────────────────────────────────────────────────────
-
-const TR = {
-  // Nav
-  navHome: "Ana Sayfa",
-  navCatalog: "Küçük İş Kataloğu",
-  navHow: "Nasıl Çalışır?",
-  navAbout: "Hakkımızda / İletişim",
-  // Home
-  heroTitle: "Bu iş için ne kadar istemelisin?",
-  heroSub: "Rakipler, bölgeler ve deneyim düzeyine göre — güncel piyasa araştırmasıyla desteklenen ücret önerisi.",
-  labelRole: "Rolün",
-  rolePlaceholder: "— Rol seçin —",
-  labelExp: "Deneyim süresi",
-  expJunior: "Yeni başlayan",
-  expMid: "Orta düzey",
-  expSenior: "Uzman",
-  expJuniorSub: "0–2 yıl",
-  expMidSub: "3–5 yıl",
-  expSeniorSub: "6+ yıl",
-  labelExtras: "Ek bilgiler",
-  extrasSub: "(isteğe bağlı)",
-  groupSector: "Sektör",
-  groupTools: "Araçlar",
-  labelCountry: "İşveren / Müşteri Bölgesi",
-  labelCountrySub: "İşi kimin için yapıyorsun?",
-  labelCurrency: "Para birimi",
-  labelHours: "Proje süresi (saat)",
-  hoursNote: "Bu rol için piyasa ortalamasına göre sabit olarak hesaplanır.",
-  ctaCalculate: "Ücret önerisini göster",
-  smallJobNudge: "Poster, video, banner gibi küçük işler mi?",
-  smallJobNudgeSub: "Sabit fiyat kataloğuna buradan bakabilirsiniz",
-  // Results
-  resultsLabel: "UI/UX Tasarımcı · Orta Düzey",
-  resultsTitle: "Ücret Önerisi",
-  newCalc: "+ Yeni hesaplama",
-  regionMedian: "Ortalama",
-  regionTurkey: "Türkiye",
-  regionEastern: "Doğu Avrupa",
-  regionWestern: "Batı Avrupa",
-  resultHourlyLabel: "Önerilen Ortalama Saatlik Ücret",
-  resultHourlySub: "Doğu Avrupa ortalaması · orta düzey",
-  resultTotalLabel: "Talep Edilmesi Gereken Toplam Ücret",
-  resultTotalSub: "40 saatlik proje · €52/sa ortalaması",
-  pdfTitle: "Bu raporu PDF olarak indir",
-  pdfDesc: "Müşteriye göstermek veya arşivlemek için — tüm bölgesel karşılaştırmalar ve ücret önerileri dahil.",
-  pdfBtn: "Raporu İndir (PDF)",
-  pdfLogoLabel: "Logonu ekle (opsiyonel)",
-  pdfLogoSub: "PNG veya SVG — PDF'in sağ üst köşesine otomatik yerleşir.",
-  pdfLogoUpload: "Yükle",
-  pdfLogoChange: "Değiştir",
-  pdfLogoRemove: "Kaldır",
-  // Catalog
-  catalogLabel: "Küçük İş Kataloğu",
-  catalogTitle: "Tek seferlik işler için sabit fiyatlar",
-  catalogSub: "Poster, video, metin, web gibi küçük ve hızlı işler için piyasa fiyat aralıkları. Saatlik hesap yerine doğrudan proje bazlı ücret gösterilir.",
-  catalogSearch: "İş türü ara — poster, video, logo, metin...",
-  catalogAll: "Tümü",
-  catalogRegion: "Bölge",
-  catalogExperience: "Deneyim",
-  catalogCurrency: "Para Birimi Seçimi",
-  regionAll: "Tüm Bölgeler",
-  catalogNoResult: "Bu arama için sonuç bulunamadı.",
-  catalogClear: "Filtreyi temizle",
-  catalogGoCalc: "Saatlik ücret hesabı yapmak ister misiniz?",
-  catalogGoCalcSub: "Uzun soluklu projeler veya sürekli işbirlikleri için saatlik ve proje bazlı hesap aracını kullanın.",
-  // How it works
-  howLabel: "Nasıl Çalışır?",
-  howTitle: "Rakamlar nereden geliyor?",
-  howSub: "Yapay zekaya tahmin ettirmiyoruz, eski şirket verisi de kullanmıyoruz — yalnızca güncel piyasa araştırmasından derlenen ortalama değerler.",
-  step1Title: "Verini gir",
-  step1Desc: "Rolünü listeden seçersin, deneyim seviyeni ve çalıştığın bölgeyi belirlersin. İsteğe bağlı olarak sektör ve araçlarını da ekleyebilirsin.",
-  step2Title: "Piyasa araştırmasından hesaplanır",
-  step2Desc: "Güncel piyasa araştırmasından derlenen ortalama değerler kullanılır. Tahmin değil, gerçek rakamlar.",
-  step3Title: "Saatlik ücret ve toplam tutar alırsın",
-  step3Desc: "Önerilen ortalama saatlik ücret ve proje bazlı talep edilmesi gereken toplam tutar birlikte gösterilir.",
-  dataTitle: "Veri ve şeffaflık",
-  dataDesc: "Gösterilen değerler düzenli olarak güncellenen piyasa araştırmasından derlenir. Kaynak metodolojimiz herkese açıktır.",
-  pdfInfoTitle: "PDF raporlar",
-  pdfInfoDesc: "Müşterilerine sunmak için profesyonel ücret raporlarını PDF olarak indirebilirsin.",
-  pdfDownloadLink: "PDF'i indir",
-  // About
-  aboutLabel: "Hakkımızda",
-  aboutTitle: "Biz kimiz?",
-  aboutP1: "RateCheck, freelancer olarak çalışan ya da küçük bir ajans yöneten kişilerin adil ve rekabetçi ücret belirlemesine yardımcı olmak için kuruldu.",
-  aboutP2: "Piyasada gerçek veriye dayalı bir araç eksikliği gördük. Yapay zekaya tahmin ettirmek ya da eski veriler kullanmak yerine, güncel piyasa araştırmasından derlenen ortalama değerler kullanıyoruz.",
-  aboutP3: 'Küçük bir ekibiz — tasarımcılar ve geliştiriciler. Hepimiz bir noktada müşteriye "Ne kadar isteyeyim?" sorusunu sorduk. Bu araç, o sorunun cevabı.',
-  stat1: "Kuruluş",
-  aboutFoundedNote: "Yeni kurulduk, verilerimiz büyüyor.",
-  contactTitle: "İletişim",
-  contactSub: "Sorularınız, geri bildirimleriniz veya iş birliği teklifleri için bize yazın.",
-  labelName: "Ad soyad", namePh: "Adınız Soyadınız",
-  labelEmail: "E-posta", emailPh: "email@ornek.com",
-  labelMessage: "Mesaj", messagePh: "Mesajınızı buraya yazın...",
-  sendBtn: "Gönder",
-  sendingBtn: "Gönderiliyor...",
-  sendError: "Mesajın gönderilemedi. Lütfen tekrar dene.",
-  sentTitle: "Mesajınız iletildi!", sentSub: "En kısa sürede geri döneceğiz.",
-  // Shared
-  back: "Geri dön",
-  notice: "Reklamlar sayesinde tamamen ücretsiz.",
-  noticeLink: "Bizi desteklemek ister misiniz?",
-  footerTagline: "Freelancer ücretlerini adil belirlemenize yardımcı olur.",
-  footerCopy: "© 2026 RateCheck. Tüm hakları saklıdır.",
-};
-
-const EN: typeof TR = {
-  navHome: "Home",
-  navCatalog: "Quick Job Catalog",
-  navHow: "How It Works",
-  navAbout: "About / Contact",
-  heroTitle: "How much should you charge for this job?",
-  heroSub: "Based on competitors, regions, and experience levels — a rate suggestion backed by current market research.",
-  labelRole: "Your role",
-  rolePlaceholder: "— Select a role —",
-  labelExp: "Experience level",
-  expJunior: "Junior",
-  expMid: "Mid-level",
-  expSenior: "Expert",
-  expJuniorSub: "0–2 yrs",
-  expMidSub: "3–5 yrs",
-  expSeniorSub: "6+ yrs",
-  labelExtras: "Additional info",
-  extrasSub: "(optional)",
-  groupSector: "Sector",
-  groupTools: "Tools",
-  labelCountry: "Client / Employer Region",
-  labelCountrySub: "Who are you doing this work for?",
-  labelCurrency: "Currency",
-  labelHours: "Project duration (hours)",
-  hoursNote: "Fixed based on the market average for this role.",
-  ctaCalculate: "Show rate suggestion",
-  smallJobNudge: "One-off jobs like posters, videos or banners?",
-  smallJobNudgeSub: "Browse the fixed-price catalog here",
-  resultsLabel: "UI/UX Designer · Mid-level",
-  resultsTitle: "Rate Suggestion",
-  newCalc: "+ New calculation",
-  regionMedian: "Average",
-  regionTurkey: "Türkiye",
-  regionEastern: "Eastern Europe",
-  regionWestern: "Western Europe",
-  resultHourlyLabel: "Recommended Average Hourly Rate",
-  resultHourlySub: "Eastern Europe average · mid-level",
-  resultTotalLabel: "Total Fee to Request",
-  resultTotalSub: "40-hour project · €52/hr average",
-  pdfTitle: "Download this report as PDF",
-  pdfDesc: "To share with a client or archive — all regional comparisons and rate suggestions included.",
-  pdfBtn: "Download Report (PDF)",
-  pdfLogoLabel: "Add your logo (optional)",
-  pdfLogoSub: "PNG or SVG — placed automatically in the PDF's top-right corner.",
-  pdfLogoUpload: "Upload",
-  pdfLogoChange: "Change",
-  pdfLogoRemove: "Remove",
-  catalogLabel: "Quick Job Catalog",
-  catalogTitle: "Fixed prices for one-time jobs",
-  catalogSub: "Market price ranges for small, fast jobs like posters, videos, copy, and web tasks. Shown as flat project fees, not hourly.",
-  catalogSearch: "Search job type — poster, video, logo, copy...",
-  catalogAll: "All",
-  catalogRegion: "Region",
-  catalogExperience: "Experience",
-  catalogCurrency: "Currency",
-  regionAll: "All Regions",
-  catalogNoResult: "No results for this search.",
-  catalogClear: "Clear filters",
-  catalogGoCalc: "Want to calculate an hourly rate?",
-  catalogGoCalcSub: "Use the hourly and project-based calculation tool for long-term projects or continuous collaborations.",
-  howLabel: "How It Works",
-  howTitle: "Where do the numbers come from?",
-  howSub: "No AI guesses or stale company data — only average values compiled from current market research.",
-  step1Title: "Enter your info",
-  step1Desc: "Select your role from the list, choose your experience level and working region. Optionally add your sector and tools.",
-  step2Title: "Calculated from market research",
-  step2Desc: "Average values compiled from current market research are used. Not estimates — real numbers.",
-  step3Title: "Get your hourly rate and total fee",
-  step3Desc: "The recommended average hourly rate and total project fee to request are shown together.",
-  dataTitle: "Data & transparency",
-  dataDesc: "Displayed values are compiled from regularly updated market research. Our source methodology is publicly available.",
-  pdfInfoTitle: "PDF reports",
-  pdfInfoDesc: "Download professional rate reports as PDF to share with clients.",
-  pdfDownloadLink: "Download PDF",
-  aboutLabel: "About",
-  aboutTitle: "Who are we?",
-  aboutP1: "RateCheck was built to help freelancers and small agency owners set fair, competitive rates.",
-  aboutP2: "We saw a gap in tools based on real data. Instead of AI guesses or stale figures, we use average values compiled from current market research.",
-  aboutP3: 'We\'re a small team — designers and developers. We\'ve all asked a client "How much should I charge?" at some point. This tool is the answer.',
-  stat1: "Founded",
-  aboutFoundedNote: "We're just getting started — our data is growing.",
-  contactTitle: "Contact",
-  contactSub: "Write to us with questions, feedback, or collaboration proposals.",
-  labelName: "Full name", namePh: "Your Full Name",
-  labelEmail: "Email", emailPh: "email@example.com",
-  labelMessage: "Message", messagePh: "Write your message here...",
-  sendBtn: "Send",
-  sendingBtn: "Sending...",
-  sendError: "Couldn't send your message. Please try again.",
-  sentTitle: "Your message was sent!", sentSub: "We'll get back to you shortly.",
-  back: "Go back",
-  notice: "Completely free thanks to ads.",
-  noticeLink: "Would you like to support us?",
-  footerTagline: "Helping freelancers set fair rates.",
-  footerCopy: "© 2026 RateCheck. All rights reserved.",
-};
-
-// ─── Lang context ─────────────────────────────────────────────────────────────
-
-const LangCtx = createContext<{ lang: Lang; setLang: (l: Lang) => void; dark: boolean; toggleDark: () => void }>({
-  lang: "tr", setLang: () => {}, dark: false, toggleDark: () => {},
-});
-const useLang = () => { const { lang } = useContext(LangCtx); return lang === "tr" ? TR : EN; };
-const useLangCtx = () => useContext(LangCtx);
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const ROLES_TR = [
-  // Tasarım
-  "UI/UX Tasarımcı","Grafik Tasarımcı","Marka Tasarımcısı","Ürün Tasarımcısı",
-  // İllüstrasyon
-  "İllüstratör","Karakter Tasarımcısı","Konsept Sanatçısı","Çizgi Roman Sanatçısı","Çocuk Kitabı İllüstratörü","Dijital Ressam","Storyboard Sanatçısı",
-  // Animasyon
-  "2D Animatör","3D Animatör","Motion Tasarımcı","Kare-Kare Animatör","Karakter Animatörü","VFX Sanatçısı","Stop Motion Animatör",
-  // Geliştirici
-  "Web Geliştirici","Frontend Geliştirici","Backend Geliştirici","Fullstack Geliştirici","Mobil Uygulama Geliştirici",
-  // İçerik
-  "Metin Yazarı (Copywriter)","İçerik Üreticisi","Sosyal Medya Uzmanı","SEO Uzmanı",
-  // Video & Fotoğraf
-  "Video Editör","Fotoğrafçı","Podcast Yapımcısı",
-];
-const ROLES_EN = [
-  // Design
-  "UI/UX Designer","Graphic Designer","Brand Designer","Product Designer",
-  // Illustration
-  "Illustrator","Character Designer","Concept Artist","Comic Artist","Children's Book Illustrator","Digital Painter","Storyboard Artist",
-  // Animation
-  "2D Animator","3D Animator","Motion Designer","Frame-by-Frame Animator","Character Animator","VFX Artist","Stop Motion Animator",
-  // Development
-  "Web Developer","Frontend Developer","Backend Developer","Fullstack Developer","Mobile App Developer",
-  // Content
-  "Copywriter","Content Creator","Social Media Specialist","SEO Specialist",
-  // Video & Photo
-  "Video Editor","Photographer","Podcast Producer",
-];
-
-// Typical market-average project length per role, in hours. Index-aligned with
-// ROLES_TR / ROLES_EN so the calculator can suggest a duration instead of asking
-// the user to guess one before seeing any rate data.
-const ROLE_DEFAULT_HOURS = [
-  // Design
-  40, 25, 45, 50,
-  // Illustration
-  20, 18, 25, 35, 40, 20, 30,
-  // Animation
-  50, 60, 35, 55, 45, 50, 60,
-  // Development
-  80, 70, 90, 100, 120,
-  // Content
-  10, 15, 20, 25,
-  // Video & Photo
-  25, 15, 20,
-];
-
-const CHIPS_TR = [
-  { group: "Sektör", items: ["Teknoloji","E-ticaret","Sağlık","Eğitim","Finans","Medya","Startup","Kurumsal"] },
-  { group: "Araçlar", items: ["Figma","Adobe Suite","React","WordPress","Shopify","Webflow"] },
-];
-const CHIPS_EN = [
-  { group: "Sector", items: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"] },
-  { group: "Tools", items: ["Figma","Adobe Suite","React","WordPress","Shopify","Webflow"] },
-];
-
-type CatalogJob = { label: string; labelEn: string; desc: string; descEn: string; category: string; categoryEn: string; baseEur: [number, number] };
-
-// Base prices = Eastern Europe / Mid-level in EUR
-const CATALOG: CatalogJob[] = [
-  { label:"Poster / Afiş", labelEn:"Poster / Flyer", desc:"Tek sayfalık baskı veya dijital afiş", descEn:"Single-page print or digital poster", category:"Tasarım", categoryEn:"Design", baseEur:[120,280] },
-  { label:"Logo tasarımı", labelEn:"Logo design", desc:"Tek konsept, 2 revizyon dahil", descEn:"Single concept, 2 revisions included", category:"Tasarım", categoryEn:"Design", baseEur:[200,500] },
-  { label:"Sosyal medya görseli", labelEn:"Social media visual", desc:"Tek gönderi, story veya kapak görseli", descEn:"Single post, story or cover image", category:"Tasarım", categoryEn:"Design", baseEur:[60,150] },
-  { label:"Banner / Reklam görseli", labelEn:"Banner / Ad visual", desc:"Web veya sosyal medya banner'ı", descEn:"Web or social media banner", category:"Tasarım", categoryEn:"Design", baseEur:[80,200] },
-  { label:"Kartvizit tasarımı", labelEn:"Business card design", desc:"Ön-arka, baskıya hazır dosya dahil", descEn:"Front-back, print-ready file included", category:"Tasarım", categoryEn:"Design", baseEur:[90,180] },
-  { label:"Sunum tasarımı", labelEn:"Presentation design", desc:"10–20 slaytlık tek sunum", descEn:"Single presentation, 10–20 slides", category:"Tasarım", categoryEn:"Design", baseEur:[150,350] },
-  { label:"E-kitap / PDF kapağı", labelEn:"E-book / PDF cover", desc:"Kitap kapağı ve iç şablon tasarımı", descEn:"Cover and inner template design", category:"Tasarım", categoryEn:"Design", baseEur:[100,250] },
-  { label:"Infografik", labelEn:"Infographic", desc:"Veri görselleştirme veya bilgi grafiği", descEn:"Data visualization or information graphic", category:"Tasarım", categoryEn:"Design", baseEur:[130,300] },
-  { label:"T-shirt / Ürün baskısı", labelEn:"T-shirt / Product print", desc:"Giysi veya ürün için baskı tasarımı", descEn:"Print design for apparel or product", category:"Tasarım", categoryEn:"Design", baseEur:[80,200] },
-  { label:"Ambalaj tasarımı", labelEn:"Packaging design", desc:"Kutu, etiket veya poşet tasarımı", descEn:"Box, label or bag design", category:"Tasarım", categoryEn:"Design", baseEur:[150,400] },
-  { label:"Menü tasarımı", labelEn:"Menu design", desc:"Restoran veya kafe menüsü (1–2 sayfa)", descEn:"Restaurant or café menu (1–2 pages)", category:"Tasarım", categoryEn:"Design", baseEur:[120,280] },
-  { label:"Flyer / El ilanı", labelEn:"Flyer / Leaflet", desc:"A5 veya A6 dijital/baskı ilanı", descEn:"A5 or A6 digital/print flyer", category:"Tasarım", categoryEn:"Design", baseEur:[70,160] },
-  { label:"İkon seti", labelEn:"Icon set", desc:"8–16 adet tutarlı UI veya marka ikonu", descEn:"8–16 consistent UI or brand icons", category:"Tasarım", categoryEn:"Design", baseEur:[100,300] },
-  { label:"E-posta şablonu tasarımı", labelEn:"Email template design", desc:"HTML veya Mailchimp uyumlu tek şablon", descEn:"HTML or Mailchimp-compatible single template", category:"Tasarım", categoryEn:"Design", baseEur:[150,350] },
-  { label:"Kısa video (≤60sn)", labelEn:"Short video (≤60s)", desc:"Reels, TikTok veya reklam klibi kurgu", descEn:"Reels, TikTok or ad clip editing", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[150,400] },
-  { label:"YouTube intro / outro", labelEn:"YouTube intro / outro", desc:"5–10 saniyelik marka animasyonu", descEn:"5–10 second brand animation", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[100,250] },
-  { label:"Motion grafik", labelEn:"Motion graphic", desc:"Hareketli logo veya metin animasyonu", descEn:"Animated logo or text animation", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[180,450] },
-  { label:"Ürün tanıtım videosu", labelEn:"Product promo video", desc:"30–60 saniyelik ürün videosu kurgu", descEn:"30–60 second product video edit", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[200,500] },
-  { label:"Whiteboard animasyon", labelEn:"Whiteboard animation", desc:"Açıklayıcı tahta animasyonu (60sn)", descEn:"Explainer whiteboard animation (60s)", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[250,600] },
-  { label:"Altyazı ekleme", labelEn:"Subtitle addition", desc:"Mevcut videoya altyazı ve transkript", descEn:"Subtitles and transcript for existing video", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[50,120] },
-  { label:"Podcast / Ses kurgu", labelEn:"Podcast / Audio edit", desc:"Tek bölüm ses düzenleme ve mastering", descEn:"Single episode audio editing and mastering", category:"Video & Animasyon", categoryEn:"Video & Animation", baseEur:[80,200] },
-  { label:"Blog yazısı", labelEn:"Blog post", desc:"SEO uyumlu, 700–1200 kelime", descEn:"SEO-friendly, 700–1200 words", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[80,200] },
-  { label:"Sosyal medya metni", labelEn:"Social media copy", desc:"5 gönderi için caption + hashtag", descEn:"Captions + hashtags for 5 posts", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[60,150] },
-  { label:"Ürün açıklaması", labelEn:"Product description", desc:"E-ticaret için 5–10 ürün metni", descEn:"5–10 e-commerce product texts", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[70,180] },
-  { label:"Slogan / Tagline", labelEn:"Slogan / Tagline", desc:"Marka veya kampanya için 3–5 seçenek", descEn:"3–5 options for brand or campaign", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[80,200] },
-  { label:"Basın bülteni", labelEn:"Press release", desc:"Tek etkinlik veya ürün lansmanı", descEn:"Single event or product launch", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[100,250] },
-  { label:"Hakkımızda metni", labelEn:"About page copy", desc:"Şirket tanıtım ve hikaye metni", descEn:"Company introduction and story text", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[90,220] },
-  { label:"E-posta metni (tek)", labelEn:"Email copy (single)", desc:"Kampanya veya karşılama e-postası", descEn:"Campaign or welcome email", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[60,150] },
-  { label:"CV / Özgeçmiş yazımı", labelEn:"CV / Resume writing", desc:"Profesyonel CV düzenleme ve yazım", descEn:"Professional CV editing and writing", category:"Metin & İçerik", categoryEn:"Copy & Content", baseEur:[80,200] },
-  { label:"Landing page", labelEn:"Landing page", desc:"Tek sayfalık tanıtım veya satış sayfası", descEn:"Single-page intro or sales page", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[300,800] },
-  { label:"WordPress kurulum", labelEn:"WordPress setup", desc:"Tema kurulumu + temel eklentiler", descEn:"Theme setup + essential plugins", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[150,350] },
-  { label:"Hata düzeltme (bug fix)", labelEn:"Bug fix", desc:"Tek bir kod hatası veya CSS sorunu", descEn:"Single code error or CSS issue", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[50,150] },
-  { label:"Form entegrasyonu", labelEn:"Form integration", desc:"İletişim formu veya e-posta bağlantısı", descEn:"Contact form or email connection", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[80,200] },
-  { label:"Google Analytics kurulum", labelEn:"Google Analytics setup", desc:"GA4 kurulum ve temel hedef tanımı", descEn:"GA4 setup and basic goal definition", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[80,180] },
-  { label:"Chatbot entegrasyonu", labelEn:"Chatbot integration", desc:"Basit kural tabanlı chatbot kurulumu", descEn:"Simple rule-based chatbot setup", category:"Web & Kod", categoryEn:"Web & Code", baseEur:[100,300] },
-  { label:"Fotoğraf retouching", labelEn:"Photo retouching", desc:"5–10 ürün veya portre fotoğrafı", descEn:"5–10 product or portrait photos", category:"Fotoğraf & Görsel", categoryEn:"Photo & Visual", baseEur:[80,200] },
-  { label:"Arkaplan kaldırma", labelEn:"Background removal", desc:"10–25 adet fotoğraf arka plan temizliği", descEn:"Background removal for 10–25 photos", category:"Fotoğraf & Görsel", categoryEn:"Photo & Visual", baseEur:[40,100] },
-  { label:"Renk düzeltme", labelEn:"Color correction", desc:"10–20 fotoğraf renk ve ışık düzenleme", descEn:"Color and light editing for 10–20 photos", category:"Fotoğraf & Görsel", categoryEn:"Photo & Visual", baseEur:[60,150] },
-  // İllüstrasyon
-  { label:"Karakter tasarımı", labelEn:"Character design", desc:"Orijinal karakter, 3 açı + renk paleti", descEn:"Original character, 3 angles + color palette", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[250,600] },
-  { label:"Editoryal illüstrasyon", labelEn:"Editorial illustration", desc:"Dergi, blog veya makale için tek illo", descEn:"Single illustration for magazine, blog or article", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[180,450] },
-  { label:"Çocuk kitabı sayfası", labelEn:"Children's book page", desc:"Tek sayfa tam renkli illüstrasyon", descEn:"Full-colour single page illustration", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[200,500] },
-  { label:"Konsept sanat", labelEn:"Concept art", desc:"Ortam, nesne veya yaratık konsepti (1 adet)", descEn:"Environment, prop or creature concept (1 piece)", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[220,550] },
-  { label:"Dijital portre / avatar", labelEn:"Digital portrait / avatar", desc:"Kişiselleştirilmiş dijital portre, tam renkli", descEn:"Personalised digital portrait, full colour", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[120,300] },
-  { label:"Çizgi roman / grafik novel sayfası", labelEn:"Comic / graphic novel page", desc:"Panel düzeni, eskiz + ink + renk", descEn:"Panel layout, sketch + ink + colour", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[200,500] },
-  { label:"Storyboard (5 kare)", labelEn:"Storyboard (5 frames)", desc:"Reklam, film veya animasyon için 5 kare", descEn:"5 frames for ad, film or animation", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[150,380] },
-  { label:"Mask / desen tasarımı", labelEn:"Pattern design", desc:"Tekrar eden yüzey veya tekstil deseni", descEn:"Repeating surface or textile pattern", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[150,350] },
-  { label:"Silah / prop tasarımı", labelEn:"Weapon / prop design", desc:"Oyun veya film için detaylı prop (1 adet)", descEn:"Detailed prop design for game or film (1 piece)", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[180,420] },
-  { label:"Emoji / sticker seti", labelEn:"Emoji / sticker set", desc:"6–10 adet tutarlı dijital sticker", descEn:"6–10 consistent digital stickers", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[150,380] },
-  { label:"NFT / dijital sanat eseri", labelEn:"NFT / digital artwork", desc:"Tek özgün dijital sanat eseri, yüksek çözünürlük", descEn:"Single original digital artwork, high resolution", category:"İllüstrasyon", categoryEn:"Illustration", baseEur:[200,600] },
-  // Animasyon (gelişmiş)
-  { label:"2D kare animasyon (5sn)", labelEn:"2D frame-by-frame animation (5s)", desc:"El çizimi veya dijital, 24fps, 5 saniye", descEn:"Hand-drawn or digital, 24fps, 5 seconds", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[300,750] },
-  { label:"2D kare animasyon (30sn)", labelEn:"2D frame-by-frame animation (30s)", desc:"El çizimi veya dijital, 24fps, 30 saniye", descEn:"Hand-drawn or digital, 24fps, 30 seconds", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[900,2200] },
-  { label:"Karakter rigging (2D)", labelEn:"Character rigging (2D)", desc:"Dijital kukla rig, After Effects veya Spine", descEn:"Digital puppet rig, After Effects or Spine", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[250,600] },
-  { label:"Rig'li karakter animasyonu (10sn)", labelEn:"Rigged character animation (10s)", desc:"Hazır rig ile 10 saniyelik sahne animasyonu", descEn:"10-second scene animation using existing rig", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[200,500] },
-  { label:"Çevre / bg animasyonu", labelEn:"Environment / bg animation", desc:"Döngülü arka plan — duman, su, yapraklar vb.", descEn:"Looping background — smoke, water, leaves etc.", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[180,420] },
-  { label:"Lip sync animasyon (10sn)", labelEn:"Lip sync animation (10s)", desc:"Ses dosyasına eşlenmiş ağız animasyonu", descEn:"Mouth animation synced to audio file", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[200,480] },
-  { label:"Açıklayıcı animasyon (explainer, 60sn)", labelEn:"Explainer animation (60s)", desc:"Senaryo + sesli anlatım + 2D animasyon", descEn:"Script + voiceover + 2D animation", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[800,2000] },
-  { label:"Döngülü GIF animasyon", labelEn:"Looping GIF animation", desc:"Web veya sosyal medya için döngülü animasyon", descEn:"Looping animation for web or social media", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[120,300] },
-  { label:"3D karakter animasyonu (5sn)", labelEn:"3D character animation (5s)", desc:"Blender / Maya ile 5 saniyelik sahne", descEn:"5-second scene in Blender or Maya", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[400,1000] },
-  { label:"Parçacık / efekt animasyonu", labelEn:"Particle / VFX animation", desc:"Ateş, patlama, sihir gibi özel efekt (5sn)", descEn:"Fire, explosion, magic etc. VFX (5s)", category:"İleri Animasyon", categoryEn:"Advanced Animation", baseEur:[250,600] },
-];
-
-// Multipliers relative to Eastern Europe / Mid baseline
-const REGION_MULT: Record<Region, number> = { turkey: 0.55, eastern: 1.0, western: 1.52 };
-const EXP_MULT: Record<Experience, number> = { junior: 0.62, mid: 1.0, senior: 1.42 };
-const CUR_RATE: Record<Currency, number> = { EUR: 1, TRY: 53.3, GBP: 0.86 };
-const CUR_SYMBOL: Record<Currency, string> = { EUR: "€", TRY: "₺", GBP: "£" };
-
-function formatPrice(baseEur: [number, number], region: Region, exp: Experience, cur: Currency): string {
-  const m = REGION_MULT[region] * EXP_MULT[exp] * CUR_RATE[cur];
-  const s = CUR_SYMBOL[cur];
-  return `${s}${Math.round(baseEur[0] * m)}–${s}${Math.round(baseEur[1] * m)}`;
-}
-
-// ─── Hourly calculator ────────────────────────────────────────────────────────
-
-// Baseline hourly rate = Eastern Europe / Mid-level, in EUR (same approach as CATALOG baseEur)
-const BASE_HOURLY_EUR = 52;
-
-// Home screen only collects a specific country, not a region bucket — map it here.
-const COUNTRY_REGION: Record<string, Region> = {
-  "Türkiye": "turkey",
-  "Almanya": "western",
-  "İngiltere": "western",
-  "Fransa": "western",
-  "Polonya": "eastern",
-};
-
-function hourlyRate(region: Region, exp: Experience, cur: Currency): number {
-  return BASE_HOURLY_EUR * REGION_MULT[region] * EXP_MULT[exp] * CUR_RATE[cur];
-}
-
-const DEFAULT_HOURS_FALLBACK = 40;
-function getDefaultHours(role: string, lang: Lang): number {
-  const roles = lang === "tr" ? ROLES_TR : ROLES_EN;
-  const idx = roles.indexOf(role);
-  return idx >= 0 ? ROLE_DEFAULT_HOURS[idx] : DEFAULT_HOURS_FALLBACK;
-}
-
-type CalcInput = { role: string; experience: Experience; region: Region; currency: Currency };
+const LANG_STORAGE_KEY = "ratecheck-lang";
+const DARK_STORAGE_KEY = "ratecheck-dark";
 
 // ─── Shared: Nav ──────────────────────────────────────────────────────────────
 
-function Nav({ screen, navigate }: { screen: Screen; navigate: (s: Screen) => void }) {
+function Nav() {
   const t = useLang();
   const { lang, setLang, dark, toggleDark } = useLangCtx();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  const link = (label: string, target: Screen) => (
+  const link = (label: string, target: string) => (
     <button
       onClick={() => { navigate(target); setOpen(false); }}
-      className={`text-sm whitespace-nowrap transition-colors ${screen === target ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
+      className={`text-sm whitespace-nowrap transition-colors ${pathname === target ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
     >
       {label}
     </button>
@@ -423,14 +58,14 @@ function Nav({ screen, navigate }: { screen: Screen; navigate: (s: Screen) => vo
   return (
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
-        <button onClick={() => navigate("home")} className="select-none shrink-0">
+        <button onClick={() => navigate(HOME_PATH)} className="select-none shrink-0">
           <img src={dark ? logoWhite : logoBlack} alt="RateCheck" className="h-6 w-auto" />
         </button>
         <div className="hidden md:flex items-center justify-center gap-5 flex-1 min-w-0">
-          {link(t.navHome, "home")}
-          {link(t.navCatalog, "catalog")}
-          {link(t.navHow, "how-it-works")}
-          {link(t.navAbout, "about")}
+          {link(t.navHome, HOME_PATH)}
+          {link(t.navCatalog, CATALOG_PATH)}
+          {link(t.navHow, HOW_IT_WORKS_PATH)}
+          {link(t.navAbout, ABOUT_PATH)}
         </div>
         <div className="hidden md:flex items-center gap-2 shrink-0">
           <LangToggle />
@@ -458,10 +93,10 @@ function Nav({ screen, navigate }: { screen: Screen; navigate: (s: Screen) => vo
       </div>
       {open && (
         <div className="md:hidden border-t border-border bg-background px-5 py-4 flex flex-col gap-3">
-          {link(t.navHome, "home")}
-          {link(t.navCatalog, "catalog")}
-          {link(t.navHow, "how-it-works")}
-          {link(t.navAbout, "about")}
+          {link(t.navHome, HOME_PATH)}
+          {link(t.navCatalog, CATALOG_PATH)}
+          {link(t.navHow, HOW_IT_WORKS_PATH)}
+          {link(t.navAbout, ABOUT_PATH)}
         </div>
       )}
     </nav>
@@ -470,10 +105,11 @@ function Nav({ screen, navigate }: { screen: Screen; navigate: (s: Screen) => vo
 
 // ─── Shared: Back ─────────────────────────────────────────────────────────────
 
-function BackButton({ goBack }: { goBack: () => void }) {
+function BackButton() {
   const t = useLang();
+  const navigate = useNavigate();
   return (
-    <button onClick={goBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
       <ArrowRight size={14} className="rotate-180" />{t.back}
     </button>
   );
@@ -513,9 +149,10 @@ function NoticeBanner({ spacing = "mt-10" }: { spacing?: string }) {
 
 // ─── Screen 1: Home ───────────────────────────────────────────────────────────
 
-function HomeScreen({ onCalculate, navigate }: { onCalculate: (input: CalcInput) => void; navigate: (s: Screen) => void }) {
+function HomeScreen() {
   const t = useLang();
   const { lang } = useLangCtx();
+  const navigate = useNavigate();
   const roles = lang === "tr" ? ROLES_TR : ROLES_EN;
   const chips = lang === "tr" ? CHIPS_TR : CHIPS_EN;
 
@@ -610,13 +247,16 @@ function HomeScreen({ onCalculate, navigate }: { onCalculate: (input: CalcInput)
 
             {/* CTA */}
             <button
-              onClick={() => onCalculate({ role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern" })}
+              onClick={() => {
+                const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern" };
+                navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
+              }}
               className="w-full mb-8 py-3.5 bg-foreground text-background rounded-xl font-semibold text-sm hover:opacity-85 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
               {t.ctaCalculate} <ArrowRight size={16} />
             </button>
 
             {/* Catalog nudge */}
-            <button onClick={() => navigate("catalog")}
+            <button onClick={() => navigate(CATALOG_PATH)}
               className="w-full flex items-center justify-between px-4 py-3 border border-dashed border-border rounded-xl hover:border-foreground/40 hover:bg-muted/40 transition-all group">
               <div className="text-left">
                 <p className="text-sm font-medium">{t.smallJobNudge}</p>
@@ -913,10 +553,12 @@ async function downloadResultsPdf(params: {
 
 // ─── Screen 2: Results ────────────────────────────────────────────────────────
 
-function ResultsScreen({ navigate, goBack, calcInput }: { navigate: (s: Screen) => void; goBack: () => void; calcInput: CalcInput | null }) {
+function ResultsScreen() {
   const t = useLang();
   const { lang } = useLangCtx();
-  const { role, experience, region, currency } = calcInput ?? { role: "", experience: "mid" as Experience, region: "eastern" as Region, currency: "EUR" as Currency };
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { role, experience, region, currency } = calcInputFromSearchParams(searchParams);
   const hours = getDefaultHours(role, lang);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -961,13 +603,13 @@ function ResultsScreen({ navigate, goBack, calcInput }: { navigate: (s: Screen) 
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       <main className="flex-1">
         <div className="max-w-2xl mx-auto px-5 pt-12 pb-20">
-          <BackButton goBack={goBack} />
+          <BackButton />
           <div className="flex items-start justify-between mb-10">
             <div>
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
               <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
             </div>
-            <button onClick={() => navigate("home")} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
+            <button onClick={() => navigate(HOME_PATH)} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
           </div>
 
           <div className="grid grid-cols-3 gap-3 mb-7">
@@ -1049,9 +691,10 @@ function ResultsScreen({ navigate, goBack, calcInput }: { navigate: (s: Screen) 
 
 // ─── Screen 3: Catalog ────────────────────────────────────────────────────────
 
-function CatalogScreen({ goBack, navigate }: { goBack: () => void; navigate: (s: Screen) => void }) {
+function CatalogScreen() {
   const t = useLang();
   const { lang } = useLangCtx();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [currency, setCurrency] = useState<Currency>("EUR");
@@ -1093,7 +736,7 @@ function CatalogScreen({ goBack, navigate }: { goBack: () => void; navigate: (s:
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-5 pt-12 pb-20">
-          <BackButton goBack={goBack} />
+          <BackButton />
 
           {/* Header */}
           <div className="mb-10 md:mb-8">
@@ -1209,7 +852,7 @@ function CatalogScreen({ goBack, navigate }: { goBack: () => void; navigate: (s:
           )}
 
           {/* Go to calculator */}
-          <button onClick={() => navigate("home")}
+          <button onClick={() => navigate(HOME_PATH)}
             className="mt-10 w-full flex items-center justify-between p-5 bg-muted rounded-2xl hover:bg-muted/70 transition-colors group text-left">
             <div>
               <p className="text-sm font-semibold mb-1">{t.catalogGoCalc}</p>
@@ -1226,7 +869,7 @@ function CatalogScreen({ goBack, navigate }: { goBack: () => void; navigate: (s:
 
 // ─── Screen 4: How it Works ───────────────────────────────────────────────────
 
-function HowItWorksScreen({ goBack }: { goBack: () => void }) {
+function HowItWorksScreen() {
   const t = useLang();
   const steps = [
     { num: "01", title: t.step1Title, desc: t.step1Desc },
@@ -1237,7 +880,7 @@ function HowItWorksScreen({ goBack }: { goBack: () => void }) {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-5 pt-16 pb-20">
-          <BackButton goBack={goBack} />
+          <BackButton />
           <div className="mb-16 max-w-xl">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">{t.howLabel}</p>
             <h1 className="text-4xl font-bold tracking-tight mb-4 leading-tight">{t.howTitle}</h1>
@@ -1282,7 +925,7 @@ function HowItWorksScreen({ goBack }: { goBack: () => void }) {
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mzdlydrl";
 
-function AboutScreen({ goBack }: { goBack: () => void }) {
+function AboutScreen() {
   const t = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -1307,7 +950,7 @@ function AboutScreen({ goBack }: { goBack: () => void }) {
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-5 pt-16 pb-20">
-          <BackButton goBack={goBack} />
+          <BackButton />
           <div className="mb-16 grid md:grid-cols-2 gap-12 items-start">
             <div>
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">{t.aboutLabel}</p>
@@ -1369,34 +1012,43 @@ function AboutScreen({ goBack }: { goBack: () => void }) {
 
 // ─── App Root ─────────────────────────────────────────────────────────────────
 
-export default function App() {
-  const [lang, setLang] = useState<Lang>("tr");
-  const [dark, setDark] = useState(false);
+function readStoredLang(): Lang {
+  return localStorage.getItem(LANG_STORAGE_KEY) === "en" ? "en" : "tr";
+}
+function readStoredDark(): boolean {
+  return localStorage.getItem(DARK_STORAGE_KEY) === "1";
+}
+
+function AppShell() {
+  const [lang, setLang] = useState<Lang>(readStoredLang);
+  const [dark, setDark] = useState<boolean>(readStoredDark);
   const toggleDark = () => setDark((d) => !d);
-  const [history, setHistory] = useState<Screen[]>(["home"]);
-  const screen = history[history.length - 1];
-  const [calcInput, setCalcInput] = useState<CalcInput | null>(null);
+  const { pathname } = useLocation();
 
-  const navigate = (s: Screen) => { setHistory((p) => [...p, s]); window.scrollTo({ top: 0, behavior: "instant" }); };
-  const goBack = () => { setHistory((p) => p.length > 1 ? p.slice(0, -1) : p); window.scrollTo({ top: 0, behavior: "instant" }); };
-  const calculate = (input: CalcInput) => { setCalcInput(input); navigate("results"); };
-
-  const renderScreen = () => {
-    switch (screen) {
-      case "home":         return <HomeScreen onCalculate={calculate} navigate={navigate} />;
-      case "results":      return <ResultsScreen navigate={navigate} goBack={goBack} calcInput={calcInput} />;
-      case "catalog":      return <CatalogScreen goBack={goBack} navigate={navigate} />;
-      case "how-it-works": return <HowItWorksScreen goBack={goBack} />;
-      case "about":        return <AboutScreen goBack={goBack} />;
-    }
-  };
+  useEffect(() => { localStorage.setItem(LANG_STORAGE_KEY, lang); }, [lang]);
+  useEffect(() => { localStorage.setItem(DARK_STORAGE_KEY, dark ? "1" : "0"); }, [dark]);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [pathname]);
 
   return (
     <LangCtx.Provider value={{ lang, setLang, dark, toggleDark }}>
       <div className={`min-h-screen bg-background text-foreground antialiased${dark ? " dark" : ""}`}>
-        <Nav screen={screen} navigate={navigate} />
-        {renderScreen()}
+        <Nav />
+        <Routes>
+          <Route path={HOME_PATH} element={<HomeScreen />} />
+          <Route path={RESULTS_PATH} element={<ResultsScreen />} />
+          <Route path={CATALOG_PATH} element={<CatalogScreen />} />
+          <Route path={HOW_IT_WORKS_PATH} element={<HowItWorksScreen />} />
+          <Route path={ABOUT_PATH} element={<AboutScreen />} />
+        </Routes>
       </div>
     </LangCtx.Provider>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   );
 }
