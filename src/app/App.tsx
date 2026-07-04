@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, useSearchParams } from "react-router";
-import { ArrowRight, Check, ChevronRight, Database, Download, FileText, Menu, Moon, Search, Sun, X } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, Database, Download, FileText, Search, X } from "lucide-react";
 import { jsPDF } from "jspdf";
-import logoBlack from "../assets/rate-check-logotype-black-rgb.svg";
-import logoWhite from "../assets/rate-check-logotype-white-rgb.svg";
 import interRegularFontUrl from "../assets/fonts/Inter-Regular.ttf";
 import interBoldFontUrl from "../assets/fonts/Inter-Bold.ttf";
 
@@ -17,135 +15,13 @@ import { CUR_SYMBOL, formatPrice, hourlyRate, getDefaultHours, COUNTRY_REGION } 
 import type { CalcInput } from "./lib/pricing";
 import { calcInputToSearchParams, calcInputFromSearchParams } from "./lib/calcInputQuery";
 import { HOME_PATH, RESULTS_PATH, CATALOG_PATH, HOW_IT_WORKS_PATH, ABOUT_PATH } from "./routes";
+import { Nav } from "./components/Nav";
+import { BackButton } from "./components/BackButton";
+import { Footer } from "./components/Footer";
+import { NoticeBanner } from "./components/NoticeBanner";
 
 const LANG_STORAGE_KEY = "ratecheck-lang";
 const DARK_STORAGE_KEY = "ratecheck-dark";
-
-// ─── Shared: Nav ──────────────────────────────────────────────────────────────
-
-function Nav() {
-  const t = useLang();
-  const { lang, setLang, dark, toggleDark } = useLangCtx();
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  const link = (label: string, target: string) => (
-    <button
-      onClick={() => { navigate(target); setOpen(false); }}
-      className={`text-sm whitespace-nowrap transition-colors ${pathname === target ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
-    >
-      {label}
-    </button>
-  );
-
-  const LangToggle = ({ mobile }: { mobile?: boolean }) => (
-    <div className={`flex gap-1 ${mobile ? "" : ""}`}>
-      {(["tr", "en"] as Lang[]).map((l) => (
-        <button
-          key={l}
-          onClick={() => setLang(l)}
-          className={`text-xs px-2.5 py-1 rounded-lg border font-semibold uppercase transition-all ${
-            lang === l ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/40"
-          }`}
-        >
-          {l}
-        </button>
-      ))}
-    </div>
-  );
-
-  return (
-    <nav className="sticky top-0 z-50 bg-background border-b border-border">
-      <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
-        <button onClick={() => navigate(HOME_PATH)} className="select-none shrink-0">
-          <img src={dark ? logoWhite : logoBlack} alt="RateCheck" className="h-6 w-auto" />
-        </button>
-        <div className="hidden md:flex items-center justify-center gap-5 flex-1 min-w-0">
-          {link(t.navHome, HOME_PATH)}
-          {link(t.navCatalog, CATALOG_PATH)}
-          {link(t.navHow, HOW_IT_WORKS_PATH)}
-          {link(t.navAbout, ABOUT_PATH)}
-        </div>
-        <div className="hidden md:flex items-center gap-2 shrink-0">
-          <LangToggle />
-          <button
-            onClick={toggleDark}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </div>
-        <div className="flex md:hidden items-center gap-2 shrink-0">
-          <LangToggle mobile />
-          <button
-            onClick={toggleDark}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </div>
-        <button className="md:hidden p-1" onClick={() => setOpen(!open)}>
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-      {open && (
-        <div className="md:hidden border-t border-border bg-background px-5 py-4 flex flex-col gap-3">
-          {link(t.navHome, HOME_PATH)}
-          {link(t.navCatalog, CATALOG_PATH)}
-          {link(t.navHow, HOW_IT_WORKS_PATH)}
-          {link(t.navAbout, ABOUT_PATH)}
-        </div>
-      )}
-    </nav>
-  );
-}
-
-// ─── Shared: Back ─────────────────────────────────────────────────────────────
-
-function BackButton() {
-  const t = useLang();
-  const navigate = useNavigate();
-  return (
-    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-      <ArrowRight size={14} className="rotate-180" />{t.back}
-    </button>
-  );
-}
-
-// ─── Shared: Footer ───────────────────────────────────────────────────────────
-
-function Footer() {
-  const t = useLang();
-  const { dark } = useLangCtx();
-  return (
-    <footer className="border-t border-border">
-      <div className="max-w-5xl mx-auto px-5 pt-12 pb-8 flex flex-col md:flex-row justify-between items-start gap-4">
-        <div>
-          <img src={dark ? logoWhite : logoBlack} alt="RateCheck" className="h-5 w-auto mb-1.5" />
-          <p className="text-xs text-muted-foreground">{t.footerTagline}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{t.footerCopy}</p>
-        </div>
-        <p className="text-xs text-muted-foreground">Instagram · Twitter · LinkedIn</p>
-      </div>
-    </footer>
-  );
-}
-
-// ─── Shared: Notice ───────────────────────────────────────────────────────────
-
-function NoticeBanner({ spacing = "mt-10" }: { spacing?: string }) {
-  const t = useLang();
-  return (
-    <div className={`${spacing} p-4 bg-muted rounded-xl`}>
-      <p className="text-xs text-muted-foreground">{t.notice}{" "}
-        <span className="underline cursor-pointer text-foreground">{t.noticeLink}</span>
-      </p>
-    </div>
-  );
-}
 
 // ─── Screen 1: Home ───────────────────────────────────────────────────────────
 
