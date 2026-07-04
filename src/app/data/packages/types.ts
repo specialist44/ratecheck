@@ -8,6 +8,8 @@ export interface RoleCategoryDef {
   id: string; // stabil slug, dil değişse de sabit kalır (örn. "corporate-identity")
   label: string; // TR
   labelEn: string; // EN
+  items: string[]; // kategorinin kapsadığı alt kalemler, TR — checkbox açıklaması + detay listesi bundan türetilir
+  itemsEn: string[]; // EN
   price: PackagePriceTable;
 }
 

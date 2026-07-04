@@ -11,6 +11,7 @@ export interface HomeFormState {
   currency: Currency;
   country: string;
   selectedChips: string[];
+  selectedCategoryIds: string[];
 }
 
 export function saveHomeFormState(state: HomeFormState) {
@@ -43,6 +44,9 @@ export function loadHomeFormState(): Partial<HomeFormState> {
       country: typeof parsed.country === "string" ? parsed.country : undefined,
       selectedChips: Array.isArray(parsed.selectedChips) && parsed.selectedChips.every((c: unknown) => typeof c === "string")
         ? parsed.selectedChips
+        : undefined,
+      selectedCategoryIds: Array.isArray(parsed.selectedCategoryIds) && parsed.selectedCategoryIds.every((c: unknown) => typeof c === "string")
+        ? parsed.selectedCategoryIds
         : undefined,
     };
   } catch {

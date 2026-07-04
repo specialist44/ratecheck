@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_CATEGORY, getRoleCategory } from "../data/roles";
+import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_CATEGORY, getRoleCategory, getRoleId } from "../data/roles";
+import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
@@ -11,9 +12,26 @@ import { loadHomeFormState, saveHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 
 const EMPTY_TOOLS: string[] = [];
 const ALL_TOOLS = new Set(Object.values(TOOLS_BY_CATEGORY).flat());
+
+// Prevents the row's own onClick (checkbox toggle) from firing when the
+// "Detaylar" link inside it is clicked, and keeps a >=44px touch target.
+function DialogTriggerButton({ checked, label }: { checked: boolean; label: string }) {
+  return (
+    <DialogTrigger asChild>
+      <button
+        type="button"
+        onClick={(e) => e.stopPropagation()}
+        className={`shrink-0 min-h-11 px-2 -my-2 flex items-center text-xs font-medium underline underline-offset-2 decoration-1 transition-colors ${checked ? "text-background/70 hover:text-background" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        {label}
+      </button>
+    </DialogTrigger>
+  );
+}
 
 export function HomeScreen() {
   const t = useLang();
@@ -28,20 +46,30 @@ export function HomeScreen() {
   const [currency, setCurrency] = useState<Currency>(saved.currency ?? "EUR");
   const [country, setCountry] = useState(saved.country ?? "Türkiye");
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
 
   const category = role ? getRoleCategory(role, lang) : null;
   const tools = category ? TOOLS_BY_CATEGORY[category] : EMPTY_TOOLS;
+  const roleId = role ? getRoleId(role, lang) : null;
+  const packageCategories = roleId ? getRoleCategories(roleId) : [];
 
   useEffect(() => {
-    saveHomeFormState({ role, experience, currency, country, selectedChips });
-  }, [role, experience, currency, country, selectedChips]);
+    saveHomeFormState({ role, experience, currency, country, selectedChips, selectedCategoryIds });
+  }, [role, experience, currency, country, selectedChips, selectedCategoryIds]);
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
   }, [category]);
 
+  useEffect(() => {
+    setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
+  }, [roleId]);
+
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
+
+  const toggleCategory = (id: string) =>
+    setSelectedCategoryIds((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -76,6 +104,48 @@ export function HomeScreen() {
                 ))}
               </div>
             </div>
+
+            {/* Package categories (role-specific, fixed price) */}
+            {packageCategories.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold mb-1.5">
+                  {t.labelCategories} <span className="text-muted-foreground font-normal text-xs">{t.categoriesSub}</span>
+                </label>
+                <div className="space-y-2">
+                  {packageCategories.map((cat) => {
+                    const checked = selectedCategoryIds.includes(cat.id);
+                    const items = lang === "tr" ? cat.items : cat.itemsEn;
+                    return (
+                      <div key={cat.id}
+                        role="checkbox" aria-checked={checked} tabIndex={0}
+                        onClick={() => toggleCategory(cat.id)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCategory(cat.id); } }}
+                        className={`w-full flex items-start gap-3 px-3.5 py-2.5 rounded-xl border text-left transition-all cursor-pointer ${checked ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
+                        <span className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center shrink-0 ${checked ? "border-background bg-background" : "border-border"}`}>
+                          {checked && <Check size={11} className="text-foreground" />}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm font-medium">{lang === "tr" ? cat.label : cat.labelEn}</span>
+                          <span className={`block text-xs mt-0.5 ${checked ? "text-background/60" : "text-muted-foreground"}`}>{items.join(", ")}</span>
+                        </span>
+                        <Dialog>
+                          <DialogTriggerButton checked={checked} label={t.categoryDetailsLink} />
+                          <DialogContent onClick={(e) => e.stopPropagation()}>
+                            <DialogHeader>
+                              <DialogTitle>{lang === "tr" ? cat.label : cat.labelEn}</DialogTitle>
+                            </DialogHeader>
+                            <p className="text-xs text-muted-foreground -mt-2">{t.categoryDetailsTitle}</p>
+                            <ul className="list-disc pl-5 space-y-1.5 text-sm">
+                              {items.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Optional chips */}
             <div>
@@ -138,10 +208,11 @@ export function HomeScreen() {
 
             {/* CTA */}
             <button
-              disabled={!role}
+              disabled={!role || (packageCategories.length > 0 && selectedCategoryIds.length === 0)}
               onClick={() => {
                 if (!role) return;
-                const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern" };
+                if (packageCategories.length > 0 && selectedCategoryIds.length === 0) return;
+                const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className="w-full mb-8 py-3.5 bg-foreground text-background rounded-xl font-semibold text-sm hover:opacity-85 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none disabled:active:scale-100">

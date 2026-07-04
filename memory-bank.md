@@ -89,3 +89,45 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 - `npm run build` hatasız geçti (proje `tsc` içermiyor, tip kontrolü sadece `vite build` üzerinden).
 - Sıradaki adımlar (onay bekliyor): (2) HomeScreen'de rol/deneyim/bölge sonrası kategori checkbox
   akışı, (3) ResultsScreen + PDF'in kategori listesi + kademeli indirimli toplamı göstermesi.
+
+---
+
+## 4 Temmuz 2026 — HomeScreen'de kategori checkbox akışı (adım 2)
+
+- HomeScreen'e, rol seçilince o rolün paket kategorilerini (şu an sadece Grafik Tasarımcı, 4
+  kategori) checkbox listesi olarak gösteren yeni bölüm eklendi (Deneyim'den hemen sonra).
+  Kategorisi olmayan roller (diğer 29 rol) için bölüm hiç render edilmiyor — eski davranış
+  (sadece rol seçmek yeterli) korunuyor.
+- `Hesapla` butonu: rolün paket kategorisi VARSA en az 1 kategori işaretlenmeden aktif olmuyor;
+  kategorisi olmayan rollerde eskisi gibi sadece rol seçimi yeterli.
+- Rol değişince eski kategori seçimleri otomatik temizleniyor (farklı rolün kategori id'leri
+  farklı, stale seçim kalmasın diye).
+- Seçim kayboLmasın diye ufak bir kapsam genişletmesi yapıldı (istenenin ötesinde ama gerekliydi):
+  `CalcInput` tipine `categoryIds: string[]` eklendi, `calcInputQuery.ts` bunu URL'de
+  `categories=id1,id2` olarak taşıyor, `homeFormState.ts` da `selectedCategoryIds`'i sayfa
+  hafızasında saklıyor. ResultsScreen bu alanı henüz OKUMUYOR (adım 3'te kullanılacak) — şu an
+  sadece sessizce yok olmasını engelliyor.
+- Yeni i18n anahtarları: `labelCategories`, `categoriesSub` (TR + EN).
+- `npm run build` hatasız geçti.
+- Sıradaki adım (onay bekliyor): (3) ResultsScreen + PDF'in seçilen kategori listesini ve
+  `calculatePackageQuote()` ile hesaplanan kademeli indirimli toplamı göstermesi (eski
+  saatlik/hours bloklarının yerine).
+
+---
+
+## 4 Temmuz 2026 — Kategori checkbox'larına açıklama + "Detaylar" modalı
+
+- `data/packages/types.ts`: `RoleCategoryDef`'e `items`/`itemsEn: string[]` eklendi (kategorinin
+  alt kalemleri). Ayrı bir "description" alanı YOK — kısa açıklama satırı bu listeden
+  (`items.join(", ")`) türetiliyor, tek kaynak korunuyor.
+- `data/packages/graphicDesigner.ts`: 4 kategorinin hepsine kullanıcının verdiği alt kalem
+  listeleri (TR) + İngilizce çevirileri eklendi.
+- `pages/HomeScreen.tsx`: kategori satırı artık `<button>` değil `role="checkbox"` bir `<div>`
+  (klavye erişimi Enter/Space ile korunuyor) — içine gerçek bir `<button>` (Dialog trigger)
+  nested edilebilsin diye. Satırın altında soluk renkli kısa açıklama satırı var. Sağda
+  altı çizili, hover'da renk değişen "Detaylar" linki (`min-h-11` = 44px dokunma alanı) — tıklanınca
+  `stopPropagation` ile checkbox toggle'ını tetiklemeden bir Dialog (shadcn `ui/dialog.tsx`, zaten
+  responsive/mobilde taşmayan) açılıyor, tam alt kalem listesini gösteriyor.
+- Yeni i18n anahtarları: `categoryDetailsLink`, `categoryDetailsTitle` (TR + EN).
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+- Checkbox işaretleme/fiyat mantığına dokunulmadı, diğer sayfalar değişmedi.
