@@ -13,7 +13,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">{t.footerTagline}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{t.footerCopy}</p>
         </div>
-        <p className="text-xs text-muted-foreground">Instagram · Twitter · LinkedIn</p>
+        <a href="#" className="text-xs text-muted-foreground">LinkedIn</a>
       </div>
     </footer>
   );
