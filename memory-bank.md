@@ -165,3 +165,31 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
   set ediliyor.
 - `canCalculate` mevcut role/kategori/sektör/araç şartlarının aynısı (mantık değişmedi).
 - `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — 30 rol → 12 meslek grubuna konsolidasyon
+
+- `data/roles.ts` tamamen yeniden yazıldı: `ROLES_TR`, `ROLES_EN`, `ROLE_IDS`, `ROLE_DEFAULT_HOURS`
+  30'dan 12 elemana indi, hepsi aynı sırada (Grafik Tasarımcı, Marka Tasarımcısı, UI/UX ve Ürün
+  Tasarımcısı, İllüstrasyon, Konsept Sanatı, Animatör, Motion Tasarımcı ve VFX, Web Geliştirici,
+  Mobil Uygulama Geliştirici, Yazarlık ve İçerik, Dijital Pazarlama, Prodüksiyon ve Medya).
+  `graphic-designer` roleId ve saat değeri (25) korundu — `data/packages/graphicDesigner.ts`'e
+  dokunulmadı.
+- `RoleCategory` enum + `ROLE_CATEGORIES` + `TOOLS_BY_CATEGORY` + `getRoleCategory()` katmanı
+  kaldırıldı, yerine roleId'ye direkt bağlı `TOOLS_BY_ROLE_ID: Record<string,string[]>` geldi
+  (12 elemanda dolaylı kategori katmanına gerek kalmadı; "Dijital Pazarlama" da eski 6 kategoriden
+  hiçbirine oturmadığı için bu değişiklik onu da doğal şekilde çözdü).
+- `pages/HomeScreen.tsx`: `getRoleCategory`/`TOOLS_BY_CATEGORY` importu kaldırıldı,
+  `tools` artık `TOOLS_BY_ROLE_ID[roleId]`'den türetiliyor, chip-reset `useEffect`'i `category`
+  yerine `roleId`'ye bağlandı. Checkbox/zorunluluk davranışı (Sektör/Araçlar/Kategori mantığı)
+  DEĞİŞMEDİ, sadece veri kaynağı değişti.
+- `CatalogScreen.tsx`'e hiç dokunulmadı (zaten `ROLES_TR/EN` kullanmıyordu, bağımsızlığı teyit
+  edilmişti).
+- `calcInputQuery.ts`/`homeFormState.ts`'in role'ü string olarak taşıma mantığı değişmedi.
+- "Dijital Pazarlama" listede var ama `data/packages/`'de kendi paket verisi YOK (bilinçli
+  placeholder — `getRoleCategories()` boş dizi döner, mevcut fallback zaten bunu karşılıyor).
+  Ayrıca araştırılıp veri eklenecek.
+- Index hizası elle doğrulandı: 4 dizi de 12'şer eleman, aynı sırada (dosya içeriği okunarak
+  teyit edildi).
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.

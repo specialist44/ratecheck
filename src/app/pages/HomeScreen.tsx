@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_CATEGORY, getRoleCategory, getRoleId } from "../data/roles";
+import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, getRoleId } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
@@ -15,7 +15,7 @@ import { NoticeBanner } from "../components/NoticeBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 
 const EMPTY_TOOLS: string[] = [];
-const ALL_TOOLS = new Set(Object.values(TOOLS_BY_CATEGORY).flat());
+const ALL_TOOLS = new Set(Object.values(TOOLS_BY_ROLE_ID).flat());
 
 // Prevents the row's own onClick (checkbox toggle) from firing when the
 // "Detaylar" link inside it is clicked, and keeps a >=44px touch target.
@@ -49,9 +49,8 @@ export function HomeScreen() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
-  const category = role ? getRoleCategory(role, lang) : null;
-  const tools = category ? TOOLS_BY_CATEGORY[category] : EMPTY_TOOLS;
   const roleId = role ? getRoleId(role, lang) : null;
+  const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export function HomeScreen() {
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
-  }, [category]);
+  }, [roleId]);
 
   useEffect(() => {
     setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
