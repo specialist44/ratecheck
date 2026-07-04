@@ -15,7 +15,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">{t.footerTagline}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{t.footerCopy}</p>
         </div>
-        <a href="#" className="inline-flex items-center gap-1.5 py-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
+        <a href="https://www.linkedin.com/company/ratecheckapp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
           <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden">
             <img src={dark ? linkedinLight : linkedinDark} alt="" className="h-full w-full object-contain" />
           </span>
