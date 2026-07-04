@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
@@ -7,6 +7,7 @@ import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN } from "../data/roles";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
+import { loadHomeFormState, saveHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
@@ -17,12 +18,17 @@ export function HomeScreen() {
   const navigate = useNavigate();
   const roles = lang === "tr" ? ROLES_TR : ROLES_EN;
   const chips = lang === "tr" ? CHIPS_TR : CHIPS_EN;
+  const saved = useMemo(() => loadHomeFormState(), []);
 
-  const [role, setRole] = useState("");
-  const [experience, setExperience] = useState<Experience>("mid");
-  const [currency, setCurrency] = useState<Currency>("EUR");
-  const [country, setCountry] = useState("Türkiye");
-  const [selectedChips, setSelectedChips] = useState<string[]>([]);
+  const [role, setRole] = useState(saved.role ?? "");
+  const [experience, setExperience] = useState<Experience>(saved.experience ?? "mid");
+  const [currency, setCurrency] = useState<Currency>(saved.currency ?? "EUR");
+  const [country, setCountry] = useState(saved.country ?? "Türkiye");
+  const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
+
+  useEffect(() => {
+    saveHomeFormState({ role, experience, currency, country, selectedChips });
+  }, [role, experience, currency, country, selectedChips]);
 
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
@@ -109,11 +115,13 @@ export function HomeScreen() {
 
             {/* CTA */}
             <button
+              disabled={!role}
               onClick={() => {
+                if (!role) return;
                 const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern" };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
-              className="w-full mb-8 py-3.5 bg-foreground text-background rounded-xl font-semibold text-sm hover:opacity-85 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+              className="w-full mb-8 py-3.5 bg-foreground text-background rounded-xl font-semibold text-sm hover:opacity-85 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none disabled:active:scale-100">
               {t.ctaCalculate} <ArrowRight size={16} />
             </button>
 
