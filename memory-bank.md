@@ -193,3 +193,52 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 - Index hizası elle doğrulandı: 4 dizi de 12'şer eleman, aynı sırada (dosya içeriği okunarak
   teyit edildi).
 - `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — ResultsScreen'e para birimi seçici eklendi (kök sebep: hiç yoktu)
+
+- Kullanıcı "para birimi butonu tıklanıyor ama değişmiyor" dedi; kod incelemesinde ResultsScreen'de
+  o butonun HİÇ VAR OLMADIĞI ortaya çıktı (currency sadece URL'den okunuyordu, setCurrency/buton
+  yoktu, Nav'da da global bir toggle yok). Bug değil, eksik özellikmiş — kullanıcıya sorup
+  netleştirdim, CatalogScreen'dekine benzer bağımsız bir seçici eklenmesini istedi.
+- `pages/ResultsScreen.tsx`: `currency` artık `useState` (`initialCurrency` = URL'den ilk değer,
+  sonrası kullanıcı seçimiyle değişir). Header'ın altına TRY/EUR/GBP toggle eklendi
+  (CatalogScreen'le aynı buton stili). Tüm fiyat hesaplamaları (`quote`, `regions`, PDF'e giden
+  `symbol`/`categories`/`total`) zaten bu `currency` state'ini okuyordu — state'i eklemek tek
+  başına tüm ekranı ve PDF'i doğru para biriminde güncellemeye yetti, ayrıca dokunmaya gerek
+  kalmadı.
+- Kategori seçim mantığına, kademeli indirim formülüne, HomeScreen'in currency seçimine,
+  `lib/pdf.ts`'e dokunulmadı.
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — ResultsScreen + PDF paket fiyatlama sistemine geçti
+
+- `pages/ResultsScreen.tsx` tamamen yeniden yazıldı: URL'den `categoryIds` de okunuyor,
+  `getRoleId()` + `getRoleCategories()` ile rolün paket kategorileri, `resolveCategoryPrice()` +
+  `calculatePackageQuote()` ile seçilen kategorilerin fiyatı ve kademeli indirimli toplamı
+  hesaplanıyor. Eski saatlik ücret/proje süresi blokları kaldırıldı, yerine: seçilen her
+  kategori kendi (indirim öncesi) fiyatıyla listeleniyor, altta (>1 kategori seçiliyse) "Paket
+  indirimi: -X" satırı, en altta büyük "Talep Edilmesi Gereken Ücret" toplamı. 3 bölge kutusu
+  artık her bölgedeki aynı kategori seçiminin PAKET TOPLAMINI gösteriyor (saatlik değil).
+- İki çökme-önleyici fallback eklendi: (1) rolün `data/packages`'te hiç kaydı yoksa (henüz
+  eklenmemiş 11 rolden biri) → "Bu rol için detaylı fiyatlandırma yakında eklenecek" kartı;
+  (2) kategori tanımlı ama `categoryIds` boşsa (elle değiştirilmiş URL/eski link) → "En az bir
+  kategori seçilmedi" kartı. İkisinde de fiyat/PDF bloğu hiç render edilmiyor, çökme yok.
+- `lib/pdf.ts`: `downloadResultsPdf()` imzası değişti — `rate`/`hourlySub` parametreleri
+  kaldırıldı, yerine `categories: {label,price}[]` ve `discount: number` geldi. PDF içeriği
+  ekranla birebir: kategori listesi + (varsa) indirim satırı + toplam. `categories.length===0`
+  durumunda PDF de çökmüyor, "yakında eklenecek" mesajı yazıp erken çıkıyor. Bölgesel
+  karşılaştırma bloğu "(saatlik)"ten "paket toplamı"na, `/sa` son ekinden arındırıldı.
+- `i18n/tr.ts` + `en.ts`: `labelHours`, `hoursNote`, `resultHourlyLabel`, `resultHourlySub`,
+  `resultTotalSub` kaldırıldı (ikisi zaten hiç kullanılmıyordu, üçü bu değişiklikle kullanılmaz
+  hale geldi). Yeni: `resultCategoriesLabel`, `resultDiscountLabel`, `resultComingSoonDesc`,
+  `resultNoCategorySelected`. `regionMedian` "Ortalama"/"Average" → "Toplam"/"Total" oldu,
+  `resultTotalLabel` "...Toplam Ücret" → "...Ücret" (kullanıcının istediği tam ifade).
+- Eski saatlik kod (`hourlyRate`, `getDefaultHours`, `BASE_HOURLY_EUR`, `pricing.ts` içinde)
+  SİLİNMEDİ, sadece artık hiçbir yerden çağrılmıyor (grep ile doğrulandı — tek referans
+  `pricing.ts`'in kendi tanımı). `data/roles.ts`, `TOOLS_BY_ROLE_ID`, `HomeScreen.tsx`'in
+  checkbox akışı, `public/seffaflik-raporu.pdf`'e dokunulmadı.
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.

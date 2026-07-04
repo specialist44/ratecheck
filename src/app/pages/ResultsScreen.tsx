@@ -2,9 +2,12 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Download } from "lucide-react";
-import type { Region } from "../types";
+import type { Currency, Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { CUR_SYMBOL, hourlyRate, getDefaultHours } from "../lib/pricing";
+import { CUR_SYMBOL } from "../lib/pricing";
+import { getRoleId } from "../data/roles";
+import { getRoleCategories } from "../data/packages";
+import { resolveCategoryPrice, calculatePackageQuote } from "../lib/packagePricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
 import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
@@ -14,13 +17,15 @@ import { BackButton } from "../components/BackButton";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
 
+const REGION_KEYS: Region[] = ["turkey", "eastern", "western"];
+
 export function ResultsScreen() {
   const t = useLang();
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { role, experience, region, currency } = calcInputFromSearchParams(searchParams);
-  const hours = getDefaultHours(role, lang);
+  const { role, experience, region, currency: initialCurrency, categoryIds } = calcInputFromSearchParams(searchParams);
+  const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
 
@@ -43,22 +48,88 @@ export function ResultsScreen() {
 
   const expLabel = experience === "junior" ? t.expJunior : experience === "mid" ? t.expMid : t.expSenior;
   const regionLabel = region === "turkey" ? t.regionTurkey : region === "eastern" ? t.regionEastern : t.regionWestern;
+  const regionLabelFor = (r: Region) => r === "turkey" ? t.regionTurkey : r === "eastern" ? t.regionEastern : t.regionWestern;
   const symbol = CUR_SYMBOL[currency];
-  const rate = hourlyRate(region, experience, currency);
-  const total = rate * hours;
   const locale = lang === "tr" ? "tr-TR" : "en-US";
 
-  const regions = (["turkey", "eastern", "western"] as Region[]).map((r) => ({
-    key: r,
-    name: r === "turkey" ? t.regionTurkey : r === "eastern" ? t.regionEastern : t.regionWestern,
-    rate: `${symbol}${Math.round(hourlyRate(r, experience, currency))}`,
-    dim: r !== region,
-  }));
+  const roleId = getRoleId(role, lang);
+  const allCategories = roleId ? getRoleCategories(roleId) : [];
+  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id));
 
-  const hourlySub = lang === "tr" ? `${regionLabel} ortalaması · ${expLabel}` : `${regionLabel} average · ${expLabel}`;
-  const totalSub = lang === "tr"
-    ? `${hours} saatlik proje · ${symbol}${Math.round(rate)}/sa ortalaması`
-    : `${hours}-hour project · ${symbol}${Math.round(rate)}/hr average`;
+  // Rol için henüz paket verisi eklenmemiş (data/packages'te kaydı yok).
+  if (allCategories.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
+        <main className="flex-1">
+          <div className="max-w-2xl mx-auto px-5 pt-12 pb-20">
+            <BackButton />
+            <div className="flex items-start justify-between mb-10">
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
+                <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
+              </div>
+              <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
+            </div>
+            <div className="p-7 border border-border rounded-2xl text-center">
+              <p className="text-sm text-muted-foreground">{t.resultComingSoonDesc}</p>
+            </div>
+            <NoticeBanner spacing="mt-7" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // URL elle değiştirilmiş / eski bağlantı — kategori seçilmemiş.
+  if (selectedCategories.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
+        <main className="flex-1">
+          <div className="max-w-2xl mx-auto px-5 pt-12 pb-20">
+            <BackButton />
+            <div className="flex items-start justify-between mb-10">
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
+                <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
+              </div>
+              <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
+            </div>
+            <div className="p-7 border border-border rounded-2xl text-center">
+              <p className="text-sm text-muted-foreground">{t.resultNoCategorySelected}</p>
+            </div>
+            <NoticeBanner spacing="mt-7" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const quote = calculatePackageQuote(
+    selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(cat, region, experience, currency) })),
+  );
+  const categoryLabel = (id: string) => {
+    const cat = selectedCategories.find((c) => c.id === id)!;
+    return lang === "tr" ? cat.label : cat.labelEn;
+  };
+  const hasDiscount = quote.items.length > 1;
+
+  const regions = REGION_KEYS.map((r) => {
+    const rq = calculatePackageQuote(
+      selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(cat, r, experience, currency) })),
+    );
+    return {
+      key: r,
+      name: regionLabelFor(r),
+      rate: `${symbol}${Math.round(rq.total).toLocaleString(locale)}`,
+      dim: r !== region,
+    };
+  });
+
+  const totalSub = hasDiscount
+    ? (lang === "tr" ? `${quote.items.length} kategori · %${Math.round(quote.totalDiscountPct * 100)} paket indirimi` : `${quote.items.length} categories · ${Math.round(quote.totalDiscountPct * 100)}% package discount`)
+    : `${regionLabel} · ${expLabel}`;
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -73,35 +144,47 @@ export function ResultsScreen() {
             <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
           </div>
 
+          <div className="flex justify-end mb-4">
+            <div className="flex gap-1.5">
+              {(["TRY", "EUR", "GBP"] as Currency[]).map((c) => (
+                <button key={c} onClick={() => setCurrency(c)}
+                  className={`px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all ${currency === c ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/30"}`}>
+                  {CUR_SYMBOL[c]} {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-7">
             {regions.map((r) => (
               <div key={r.key} className={`p-3 sm:p-4 rounded-2xl border transition-all ${!r.dim ? "border-foreground bg-foreground text-background ring-2 ring-foreground/10" : "border-border"}`}>
                 <p className={`text-[10px] uppercase tracking-wider mb-2 ${!r.dim ? "text-background/50" : "text-muted-foreground"}`}>{t.regionMedian}</p>
-                <p className="text-lg sm:text-2xl font-bold leading-none">{r.rate}<span className={`text-[10px] sm:text-xs font-normal ${!r.dim ? "text-background/60" : "text-muted-foreground"}`}>/sa</span></p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{r.rate}</p>
                 <p className={`text-[11px] mt-2.5 font-medium ${!r.dim ? "text-background/70" : "text-muted-foreground"}`}>{r.name}</p>
               </div>
             ))}
           </div>
 
-          <div className="mb-7">
-            <p className="block text-sm font-semibold mb-1.5">{t.labelHours}</p>
-            <div className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm bg-muted/50 text-foreground">
-              {hours} {lang === "tr" ? "saat" : "hours"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1.5">{t.hoursNote}</p>
+          <div className="mb-7 space-y-2">
+            <p className="text-sm font-semibold mb-1.5">{t.resultCategoriesLabel}</p>
+            {quote.items.map((item) => (
+              <div key={item.categoryId} className="flex items-center justify-between gap-3 px-3.5 py-2.5 border border-border rounded-xl text-sm">
+                <span className="font-medium">{categoryLabel(item.categoryId)}</span>
+                <span className="font-semibold shrink-0">{symbol}{Math.round(item.fullPrice).toLocaleString(locale)}</span>
+              </div>
+            ))}
           </div>
 
           <div className="p-7 bg-foreground text-background rounded-2xl mb-5">
-            <div className="mb-6">
-              <p className="text-[10px] uppercase tracking-widest text-background/50 mb-2">{t.resultHourlyLabel}</p>
-              <p className="text-5xl font-bold tracking-tight mb-1">{symbol}{Math.round(rate)}<span className="text-2xl font-normal text-background/60">/sa</span></p>
-              <p className="text-sm text-background/50">{hourlySub}</p>
-            </div>
-            <div className="pt-6 border-t border-white/15">
-              <p className="text-[10px] uppercase tracking-widest text-background/50 mb-2">{t.resultTotalLabel}</p>
-              <p className="text-4xl font-bold tracking-tight mb-1">{symbol}{Math.round(total).toLocaleString(locale)}</p>
-              <p className="text-sm text-background/50">{totalSub}</p>
-            </div>
+            {hasDiscount && (
+              <div className="flex items-center justify-between text-sm text-background/60 mb-4 pb-4 border-b border-white/15">
+                <span>{t.resultDiscountLabel}</span>
+                <span>-{symbol}{Math.round(quote.subtotal - quote.total).toLocaleString(locale)}</span>
+              </div>
+            )}
+            <p className="text-[10px] uppercase tracking-widest text-background/50 mb-2">{t.resultTotalLabel}</p>
+            <p className="text-4xl font-bold tracking-tight mb-1">{symbol}{Math.round(quote.total).toLocaleString(locale)}</p>
+            <p className="text-sm text-background/50">{totalSub}</p>
           </div>
 
           <div className="border-2 border-foreground rounded-2xl p-5 mb-4">
@@ -115,7 +198,16 @@ export function ResultsScreen() {
               </div>
             </div>
             <button
-              onClick={() => { downloadResultsPdf({ lang, role, expLabel, regionLabel, symbol, rate, total, hourlySub, totalSub, regions, locale, logo }).catch(console.error); }}
+              onClick={() => {
+                downloadResultsPdf({
+                  lang, role, expLabel, regionLabel, symbol, locale, logo,
+                  categories: quote.items.map((item) => ({ label: categoryLabel(item.categoryId), price: item.fullPrice })),
+                  discount: hasDiscount ? quote.subtotal - quote.total : 0,
+                  total: quote.total,
+                  totalSub,
+                  regions,
+                }).catch(console.error);
+              }}
               className="mt-4 w-full py-2.5 bg-foreground text-background rounded-xl text-sm font-semibold hover:opacity-85 transition-all flex items-center justify-center gap-2">
               <Download size={15} />{t.pdfBtn}
             </button>

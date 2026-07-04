@@ -138,15 +138,15 @@ export async function downloadResultsPdf(params: {
   expLabel: string;
   regionLabel: string;
   symbol: string;
-  rate: number;
+  categories: { label: string; price: number }[]; // indirim öncesi fiyatlarla, pahalıdan ucuza sıralı
+  discount: number; // indirim tutarı, indirim yoksa 0
   total: number;
-  hourlySub: string;
   totalSub: string;
   regions: { key: Region; name: string; rate: string; dim: boolean }[];
   locale: string;
   logo: PdfLogo | null;
 }) {
-  const { lang, role, expLabel, regionLabel, symbol, rate, total, hourlySub, totalSub, regions, locale, logo } = params;
+  const { lang, role, expLabel, regionLabel, symbol, categories, discount, total, totalSub, regions, locale, logo } = params;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   await ensurePdfFontsLoaded(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -193,61 +193,93 @@ export async function downloadResultsPdf(params: {
   doc.text(regionLabel, marginX + 85, y);
 
   y += 14;
-  doc.setFontSize(11);
-  doc.text(lang === "tr" ? "Bölgesel Karşılaştırma (saatlik)" : "Regional Comparison (hourly)", marginX, y);
 
-  y += 8;
-  doc.setFontSize(10);
-  regions.forEach((r) => {
-    if (!r.dim) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(marginX - 3, y - 5.5, pageWidth - 2 * marginX + 6, 8, "F");
+  if (categories.length === 0) {
+    // Rol için henüz paket verisi yok — sessiz çökme yerine kısa bir mesaj yazıp bitir.
+    doc.setFont("Inter", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    const msg = lang === "tr" ? "Bu rol için detaylı fiyatlandırma yakında eklenecek." : "Detailed pricing for this role is coming soon.";
+    doc.text(msg, marginX, y);
+  } else {
+    doc.setFont("Inter", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(20);
+    doc.text(lang === "tr" ? "Seçilen Kategoriler" : "Selected Categories", marginX, y);
+
+    y += 8;
+    doc.setFontSize(10);
+    categories.forEach((c) => {
+      doc.setFont("Inter", "normal");
+      doc.setTextColor(60);
+      doc.text(c.label, marginX, y);
+      doc.setFont("Inter", "bold");
+      doc.setTextColor(20);
+      doc.text(`${symbol}${Math.round(c.price).toLocaleString(locale)}`, pageWidth - marginX, y, { align: "right" });
+      y += 8;
+    });
+
+    y += 4;
+    doc.setDrawColor(210);
+    doc.line(marginX, y, pageWidth - marginX, y);
+
+    y += 12;
+    doc.setFontSize(11);
+    doc.setFont("Inter", "bold");
+    doc.setTextColor(20);
+    doc.text(lang === "tr" ? "Bölgesel Karşılaştırma" : "Regional Comparison", marginX, y);
+
+    y += 8;
+    doc.setFontSize(10);
+    regions.forEach((r) => {
+      if (!r.dim) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(marginX - 3, y - 5.5, pageWidth - 2 * marginX + 6, 8, "F");
+      }
+      doc.setFont("Inter", r.dim ? "normal" : "bold");
+      doc.setTextColor(r.dim ? 100 : 20);
+      doc.text(r.name, marginX, y);
+      doc.text(r.rate, pageWidth - marginX, y, { align: "right" });
+      y += 9;
+    });
+
+    y += 5;
+    doc.setDrawColor(210);
+    doc.line(marginX, y, pageWidth - marginX, y);
+
+    y += 12;
+    doc.setFont("Inter", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(20);
+    doc.text(lang === "tr" ? "Sonuç" : "Result", marginX, y);
+
+    if (discount > 0) {
+      y += 9;
+      doc.setFont("Inter", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(130);
+      doc.text(lang === "tr" ? "PAKET İNDİRİMİ" : "PACKAGE DISCOUNT", marginX, y);
+      doc.setFont("Inter", "bold");
+      doc.setTextColor(20);
+      doc.text(`-${symbol}${Math.round(discount).toLocaleString(locale)}`, pageWidth - marginX, y, { align: "right" });
     }
-    doc.setFont("Inter", r.dim ? "normal" : "bold");
-    doc.setTextColor(r.dim ? 100 : 20);
-    doc.text(r.name, marginX, y);
-    doc.text(`${r.rate}/${lang === "tr" ? "sa" : "hr"}`, pageWidth - marginX, y, { align: "right" });
+
     y += 9;
-  });
-
-  y += 5;
-  doc.setDrawColor(210);
-  doc.line(marginX, y, pageWidth - marginX, y);
-
-  y += 12;
-  doc.setFont("Inter", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(20);
-  doc.text(lang === "tr" ? "Sonuç" : "Result", marginX, y);
-
-  y += 9;
-  doc.setFont("Inter", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(130);
-  doc.text(lang === "tr" ? "ÖNERİLEN SAATLİK ÜCRET" : "RECOMMENDED HOURLY RATE", marginX, y);
-  y += 7;
-  doc.setFont("Inter", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(20);
-  doc.text(`${symbol}${Math.round(rate)}/${lang === "tr" ? "sa" : "hr"}`, marginX, y);
-  y += 6;
-  doc.setFont("Inter", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(130);
-  doc.text(hourlySub, marginX, y);
-
-  y += 12;
-  doc.text(lang === "tr" ? "TOPLAM ÜCRET" : "TOTAL FEE", marginX, y);
-  y += 7;
-  doc.setFont("Inter", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(20);
-  doc.text(`${symbol}${Math.round(total).toLocaleString(locale)}`, marginX, y);
-  y += 6;
-  doc.setFont("Inter", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(130);
-  doc.text(totalSub, marginX, y);
+    doc.setFont("Inter", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(130);
+    doc.text(lang === "tr" ? "TALEP EDİLMESİ GEREKEN ÜCRET" : "FEE TO REQUEST", marginX, y);
+    y += 7;
+    doc.setFont("Inter", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(20);
+    doc.text(`${symbol}${Math.round(total).toLocaleString(locale)}`, marginX, y);
+    y += 6;
+    doc.setFont("Inter", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(130);
+    doc.text(totalSub, marginX, y);
+  }
 
   const footerLineY = pageHeight - 24;
   doc.setDrawColor(210);
