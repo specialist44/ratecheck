@@ -196,6 +196,38 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 
 ---
 
+## 5 Temmuz 2026 — Dil değiştirince seçimlerin kaybolması düzeltildi
+
+- Kök sebep remount/key sorunu DEĞİLDİ (App.tsx'te `key={lang}` yok, route değişmiyor).
+  Gerçek sebep: `role` state'i (HomeScreen) ve `CalcInput.role` (URL) o an aktif DİLDEKİ görünen
+  etiketi ("Grafik Tasarımcı" / "Graphic Designer") ham string olarak saklıyordu. Dil değişince
+  `ROLES_TR`/`ROLES_EN` dizisi değiştiği için eski string yeni dizide bulunamıyordu
+  (`getRoleId`'nin `indexOf` çağrısı -1 dönüyordu) → `roleId` `null` oluyordu → ona bağlı
+  kategori/araç listeleri boşalıyordu → kategori/araç seçimleri de zincirleme siliniyordu.
+  Ayrıca Sektör chip'leri de ("Teknoloji"/"Tech") dil bazlı çevrilmiş ham string olarak
+  saklandığı için aynı şekilde kırılıyordu.
+- Kalıcı çözüm: seçim state'lerini dilden bağımsız STABİL kimliklerle tutmaya geçirdim.
+  - `lib/pricing.ts`: `CalcInput.role: string` → `CalcInput.roleId: string`.
+  - `lib/calcInputQuery.ts`: URL parametresi `role` → `roleId`.
+  - `lib/homeFormState.ts`: `HomeFormState.role` → `roleId`.
+  - `data/roles.ts`: `getRoleId()` (string→id, kırılgan) kaldırıldı, yerine `getRoleLabel(roleId,
+    lang)` geldi (id→string, güvenli — her render'da güncel dille yeniden hesaplanır). `CHIPS_TR`/
+    `CHIPS_EN` artık `{id, label}` çiftleri taşıyor (id'ler: tech/ecommerce/health/education/
+    finance/media/startup/enterprise, dilden bağımsız); çeviri METİNLERİ değişmedi.
+  - `pages/HomeScreen.tsx`: `role` state'i `roleId` oldu, `<select>` artık `ROLE_IDS`'ten değer
+    alıp o an aktif dilin etiketini gösteriyor. Sektör chip toggle'ı artık `chip.id` üzerinden.
+  - `pages/ResultsScreen.tsx`: URL'den `roleId` okunuyor, ekranda gösterilecek `roleLabel` her
+    render'da `getRoleLabel(roleId, lang)` ile taze hesaplanıyor — dil değişince SADECE bu metin
+    güncelleniyor, `roleId`/kategori seçimleri/hesaplama hiç etkilenmiyor.
+- Kategori seçimleri (`selectedCategoryIds`) zaten `cat.id` gibi stabil id kullanıyordu, araç
+  chip'leri de (tool adları) zaten dilden bağımsızdı — ikisi de bu bug'dan doğrudan etkilenmiyordu,
+  sadece rol kırılınca zincirleme sıfırlanıyorlardı; role/roleId düzeltilince onlar da düzeldi.
+- Kategori/fiyat hesaplama mantığına, çeviri metinlerinin kendisine dokunulmadı.
+- `npm run build` hatasız geçti; `getRoleId` için repo genelinde kalan referans kalmadığı
+  grep ile doğrulandı. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
 ## 5 Temmuz 2026 — Marka Tasarımcısı paket verisi eklendi (2. rol)
 
 - Yeni `data/packages/brandDesigner.ts`: `roleId: "brand-designer"` (roles.ts'teki `ROLE_IDS`

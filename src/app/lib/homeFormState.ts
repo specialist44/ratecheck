@@ -6,7 +6,7 @@ const EXPERIENCES: Experience[] = ["junior", "mid", "senior"];
 const CURRENCIES: Currency[] = ["TRY", "EUR", "GBP"];
 
 export interface HomeFormState {
-  role: string;
+  roleId: string;
   experience: Experience;
   currency: Currency;
   country: string;
@@ -38,7 +38,7 @@ export function loadHomeFormState(): Partial<HomeFormState> {
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return {
-      role: typeof parsed.role === "string" ? parsed.role : undefined,
+      roleId: typeof parsed.roleId === "string" ? parsed.roleId : undefined,
       experience: EXPERIENCES.includes(parsed.experience) ? parsed.experience : undefined,
       currency: CURRENCIES.includes(parsed.currency) ? parsed.currency : undefined,
       country: typeof parsed.country === "string" ? parsed.country : undefined,

@@ -5,7 +5,7 @@ import { Download } from "lucide-react";
 import type { Currency, Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CUR_SYMBOL } from "../lib/pricing";
-import { getRoleId } from "../data/roles";
+import { getRoleLabel } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { resolveCategoryPrice, calculatePackageQuote } from "../lib/packagePricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
@@ -24,7 +24,7 @@ export function ResultsScreen() {
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { role, experience, region, currency: initialCurrency, categoryIds } = calcInputFromSearchParams(searchParams);
+  const { roleId, experience, region, currency: initialCurrency, categoryIds } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -47,12 +47,12 @@ export function ResultsScreen() {
   };
 
   const expLabel = experience === "junior" ? t.expJunior : experience === "mid" ? t.expMid : t.expSenior;
+  const roleLabel = getRoleLabel(roleId, lang);
   const regionLabel = region === "turkey" ? t.regionTurkey : region === "eastern" ? t.regionEastern : t.regionWestern;
   const regionLabelFor = (r: Region) => r === "turkey" ? t.regionTurkey : r === "eastern" ? t.regionEastern : t.regionWestern;
   const symbol = CUR_SYMBOL[currency];
   const locale = lang === "tr" ? "tr-TR" : "en-US";
 
-  const roleId = getRoleId(role, lang);
   const allCategories = roleId ? getRoleCategories(roleId) : [];
   const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id));
 
@@ -65,7 +65,7 @@ export function ResultsScreen() {
             <BackButton />
             <div className="flex items-start justify-between mb-10">
               <div>
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[roleLabel, expLabel].filter(Boolean).join(" · ")}</p>
                 <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
               </div>
               <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
@@ -90,7 +90,7 @@ export function ResultsScreen() {
             <BackButton />
             <div className="flex items-start justify-between mb-10">
               <div>
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[roleLabel, expLabel].filter(Boolean).join(" · ")}</p>
                 <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
               </div>
               <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
@@ -138,7 +138,7 @@ export function ResultsScreen() {
           <BackButton />
           <div className="flex items-start justify-between mb-10">
             <div>
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[role, expLabel].filter(Boolean).join(" · ")}</p>
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">{[roleLabel, expLabel].filter(Boolean).join(" · ")}</p>
               <h2 className="text-2xl font-bold tracking-tight">{t.resultsTitle}</h2>
             </div>
             <button onClick={() => { clearHomeFormState(); navigate(HOME_PATH); }} className="text-sm px-4 py-2 border border-border rounded-xl hover:bg-muted transition-colors font-medium">{t.newCalc}</button>
@@ -200,7 +200,7 @@ export function ResultsScreen() {
             <button
               onClick={() => {
                 downloadResultsPdf({
-                  lang, role, expLabel, regionLabel, symbol, locale, logo,
+                  lang, role: roleLabel, expLabel, regionLabel, symbol, locale, logo,
                   categories: quote.items.map((item) => ({ label: categoryLabel(item.categoryId), price: item.fullPrice })),
                   discount: hasDiscount ? quote.subtotal - quote.total : 0,
                   total: quote.total,

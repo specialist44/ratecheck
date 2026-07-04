@@ -7,7 +7,7 @@ const CURRENCIES: Currency[] = ["EUR", "TRY", "GBP"];
 
 export function calcInputToSearchParams(input: CalcInput): URLSearchParams {
   return new URLSearchParams({
-    role: input.role,
+    roleId: input.roleId,
     experience: input.experience,
     region: input.region,
     currency: input.currency,
@@ -23,7 +23,7 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
   const currency = params.get("currency");
   const categories = params.get("categories");
   return {
-    role: params.get("role") ?? "",
+    roleId: params.get("roleId") ?? "",
     experience: EXPERIENCES.includes(experience as Experience) ? (experience as Experience) : "mid",
     region: REGIONS.includes(region as Region) ? (region as Region) : "eastern",
     currency: CURRENCIES.includes(currency as Currency) ? (currency as Currency) : "EUR",

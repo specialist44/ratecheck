@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, getRoleId } from "../data/roles";
+import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
@@ -41,7 +41,7 @@ export function HomeScreen() {
   const chips = lang === "tr" ? CHIPS_TR : CHIPS_EN;
   const saved = useMemo(() => loadHomeFormState(), []);
 
-  const [role, setRole] = useState(saved.role ?? "");
+  const [roleId, setRoleId] = useState(saved.roleId ?? "");
   const [experience, setExperience] = useState<Experience>(saved.experience ?? "mid");
   const [currency, setCurrency] = useState<Currency>(saved.currency ?? "EUR");
   const [country, setCountry] = useState(saved.country ?? "Türkiye");
@@ -49,13 +49,12 @@ export function HomeScreen() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
-  const roleId = role ? getRoleId(role, lang) : null;
   const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
 
   useEffect(() => {
-    saveHomeFormState({ role, experience, currency, country, selectedChips, selectedCategoryIds });
-  }, [role, experience, currency, country, selectedChips, selectedCategoryIds]);
+    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds });
+  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds]);
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
@@ -68,11 +67,11 @@ export function HomeScreen() {
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
 
-  const sectorChips = chips.flatMap((g) => g.items);
-  const sectorSelected = sectorChips.some((c) => selectedChips.includes(c));
+  const sectorChipIds = chips.flatMap((g) => g.items.map((i) => i.id));
+  const sectorSelected = sectorChipIds.some((id) => selectedChips.includes(id));
   const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
   const categorySelected = packageCategories.length === 0 || selectedCategoryIds.length > 0;
-  const canCalculate = !!role && categorySelected && sectorSelected && toolsSelected;
+  const canCalculate = !!roleId && categorySelected && sectorSelected && toolsSelected;
 
   const toggleCategory = (id: string) =>
     setSelectedCategoryIds((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
@@ -90,10 +89,10 @@ export function HomeScreen() {
             {/* Role */}
             <div>
               <label className="block text-sm font-semibold mb-1.5">{t.labelRole}</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)}
+              <select value={roleId} onChange={(e) => setRoleId(e.target.value)}
                 className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm bg-background focus:outline-none focus:border-foreground/40 focus:ring-2 focus:ring-foreground/10 transition-all">
                 <option value="">{t.rolePlaceholder}</option>
-                {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+                {ROLE_IDS.map((id, i) => <option key={id} value={id}>{roles[i]}</option>)}
               </select>
             </div>
 
@@ -163,9 +162,9 @@ export function HomeScreen() {
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{group}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {items.map((chip) => (
-                        <button key={chip} onClick={() => toggleChip(chip)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
-                          {selectedChips.includes(chip) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip}
+                        <button key={chip.id} onClick={() => toggleChip(chip.id)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                          {selectedChips.includes(chip.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip.label}
                         </button>
                       ))}
                     </div>
@@ -218,7 +217,7 @@ export function HomeScreen() {
               aria-disabled={!canCalculate}
               onClick={() => {
                 if (!canCalculate) { setAttemptedSubmit(true); return; }
-                const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds };
+                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>

@@ -47,10 +47,12 @@ export const ROLE_IDS = [
   "production-media",
 ];
 
-export function getRoleId(role: string, lang: "tr" | "en"): string | null {
-  const list = lang === "tr" ? ROLES_TR : ROLES_EN;
-  const index = list.indexOf(role);
-  return index === -1 ? null : ROLE_IDS[index];
+// Dilden bağımsız roleId'den, o an aktif dildeki görünen etikete döner.
+// Rol seçimi state'te roleId olarak tutulmalı (bkz. HomeScreen/ResultsScreen) —
+// display string'i (ROLES_TR/EN etiketi) tutmak dil değişince eşleşmeyi bozar.
+export function getRoleLabel(roleId: string, lang: "tr" | "en"): string {
+  const index = ROLE_IDS.indexOf(roleId);
+  return index === -1 ? "" : (lang === "tr" ? ROLES_TR : ROLES_EN)[index];
 }
 
 // Typical market-average project length per role, in hours. Index-aligned with
@@ -71,11 +73,16 @@ export const ROLE_DEFAULT_HOURS = [
   20,  // Prodüksiyon ve Medya
 ];
 
-export const CHIPS_TR = [
-  { group: "Sektör", items: ["Teknoloji","E-ticaret","Sağlık","Eğitim","Finans","Medya","Startup","Kurumsal"] },
+// id: dilden bağımsız stabil anahtar — seçili sektör chip'lerini bununla
+// saklıyoruz, dil değişince label değişir ama seçim kaybolmaz.
+export interface SectorChip { id: string; label: string }
+const SECTOR_CHIP_IDS = ["tech", "ecommerce", "health", "education", "finance", "media", "startup", "enterprise"];
+
+export const CHIPS_TR: { group: string; items: SectorChip[] }[] = [
+  { group: "Sektör", items: SECTOR_CHIP_IDS.map((id, i) => ({ id, label: ["Teknoloji","E-ticaret","Sağlık","Eğitim","Finans","Medya","Startup","Kurumsal"][i] })) },
 ];
-export const CHIPS_EN = [
-  { group: "Sector", items: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"] },
+export const CHIPS_EN: { group: string; items: SectorChip[] }[] = [
+  { group: "Sector", items: SECTOR_CHIP_IDS.map((id, i) => ({ id, label: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"][i] })) },
 ];
 
 // roleId -> araç listesi (TR/EN'de aynı, sadece çevre metin dile göre değişir).
