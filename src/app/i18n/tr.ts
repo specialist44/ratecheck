@@ -21,7 +21,7 @@ export const TR = {
   categoryDetailsLink: "Detaylar",
   categoryDetailsTitle: "Bu kategori neleri kapsıyor?",
   labelExtras: "Ek bilgiler",
-  extrasSub: "(isteğe bağlı)",
+  requiredFieldWarning: "Daha doğru sonuç verebilmemiz için lütfen gerekli alanları doldurun.",
   groupSector: "Sektör",
   groupTools: "Araçlar",
   labelCountry: "İşveren / Müşteri Bölgesi",

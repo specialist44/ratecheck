@@ -47,6 +47,7 @@ export function HomeScreen() {
   const [country, setCountry] = useState(saved.country ?? "Türkiye");
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const category = role ? getRoleCategory(role, lang) : null;
   const tools = category ? TOOLS_BY_CATEGORY[category] : EMPTY_TOOLS;
@@ -67,6 +68,12 @@ export function HomeScreen() {
 
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
+
+  const sectorChips = chips.flatMap((g) => g.items);
+  const sectorSelected = sectorChips.some((c) => selectedChips.includes(c));
+  const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
+  const categorySelected = packageCategories.length === 0 || selectedCategoryIds.length > 0;
+  const canCalculate = !!role && categorySelected && sectorSelected && toolsSelected;
 
   const toggleCategory = (id: string) =>
     setSelectedCategoryIds((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
@@ -144,14 +151,13 @@ export function HomeScreen() {
                     );
                   })}
                 </div>
+                {attemptedSubmit && !categorySelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
               </div>
             )}
 
-            {/* Optional chips */}
+            {/* Required chips (sector, tools) */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5">
-                {t.labelExtras} <span className="text-muted-foreground font-normal text-xs">{t.extrasSub}</span>
-              </label>
+              <label className="block text-sm font-semibold mb-1.5">{t.labelExtras}</label>
               <div className="space-y-3">
                 {chips.map(({ group, items }) => (
                   <div key={group}>
@@ -164,6 +170,7 @@ export function HomeScreen() {
                         </button>
                       ))}
                     </div>
+                    {attemptedSubmit && !sectorSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                   </div>
                 ))}
                 {tools.length > 0 && (
@@ -177,6 +184,7 @@ export function HomeScreen() {
                         </button>
                       ))}
                     </div>
+                    {attemptedSubmit && !toolsSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                   </div>
                 )}
               </div>
@@ -208,14 +216,13 @@ export function HomeScreen() {
 
             {/* CTA */}
             <button
-              disabled={!role || (packageCategories.length > 0 && selectedCategoryIds.length === 0)}
+              aria-disabled={!canCalculate}
               onClick={() => {
-                if (!role) return;
-                if (packageCategories.length > 0 && selectedCategoryIds.length === 0) return;
+                if (!canCalculate) { setAttemptedSubmit(true); return; }
                 const input: CalcInput = { role, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
-              className="w-full mb-8 py-3.5 bg-foreground text-background rounded-xl font-semibold text-sm hover:opacity-85 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none disabled:active:scale-100">
+              className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>
               {t.ctaCalculate} <ArrowRight size={16} />
             </button>
 

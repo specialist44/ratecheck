@@ -131,3 +131,37 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
 - Yeni i18n anahtarları: `categoryDetailsLink`, `categoryDetailsTitle` (TR + EN).
 - `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
 - Checkbox işaretleme/fiyat mantığına dokunulmadı, diğer sayfalar değişmedi.
+
+---
+
+## 5 Temmuz 2026 — Sektör ve Araçlar grupları zorunlu hale getirildi
+
+- `pages/HomeScreen.tsx`: "Ek bilgiler (isteğe bağlı)" başlığındaki "(isteğe bağlı)" kaldırıldı,
+  Sektör ve Araçlar grupları artık zorunlu. `sectorSelected`/`toolsSelected` türetildi (chips
+  grubundaki item'lardan/role bağlı tools listesinden en az 1 seçili mi kontrolü). `Hesapla`
+  butonu artık kategori şartına ek olarak bu ikisi de sağlanmadan aktif olmuyor.
+  Boş kalan grubun altında kırmızı uyarı satırı (`t.requiredFieldWarning`) beliriyor.
+- `i18n/tr.ts` / `en.ts`: `extrasSub` ("isteğe bağlı"/"optional") kaldırıldı (artık kullanılmıyor,
+  kaldırılması zaten bu görevin parçasıydı), yerine `requiredFieldWarning` eklendi.
+- Kategori checkbox grubunun kendi mantığına (açıklama satırları, Detaylar modalı), fiyat
+  hesaplamaya, diğer sayfalara dokunulmadı.
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — Zorunluluk uyarısı: sayfa açılışında değil, "Hesapla" denemesinde göster
+
+- `pages/HomeScreen.tsx`: yeni `attemptedSubmit` state. Sektör/Araçlar/Kategori gruplarındaki
+  kırmızı uyarı artık sayfa ilk açıldığında görünmüyor — kullanıcı tercih ettiği gibi (`tercihen
+  görünmesin`) boş gruplarda hiçbir şey yok. Sadece kullanıcı `Hesapla` butonuna basıp da hâlâ
+  eksik alan varsa `attemptedSubmit` true olup ilgili boş grup(lar)ın altında kırmızı uyarı
+  beliriyor; alan doldurulunca o gruba özel uyarı kayboluyor (koşullar canlı, state'e bağlı).
+  Kategori grubuna da aynı uyarı eklendi (önceden yoktu, kendi mantığına dokunulmadı — sadece bu
+  proje-geneli uyarı deseni eklendi).
+- Bunu yapabilmek için CTA butonu native `disabled` yerine `aria-disabled` + manuel `onClick`
+  guard'ına geçti (native disabled buton hiç click event'i ateşlemiyor, "tıklama denemesi"
+  yakalanamıyordu). Görsel/davranışsal sonuç aynı: `canCalculate` false iken opacity düşük,
+  cursor-not-allowed, gerçek submit/navigate tetiklenmiyor — sadece `attemptedSubmit(true)`
+  set ediliyor.
+- `canCalculate` mevcut role/kategori/sektör/araç şartlarının aynısı (mantık değişmedi).
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.

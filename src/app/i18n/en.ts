@@ -21,7 +21,7 @@ export const EN: typeof TR = {
   categoryDetailsLink: "Details",
   categoryDetailsTitle: "What's included in this category?",
   labelExtras: "Additional info",
-  extrasSub: "(optional)",
+  requiredFieldWarning: "Please fill in the required fields so we can give you a more accurate result.",
   groupSector: "Sector",
   groupTools: "Tools",
   labelCountry: "Client / Employer Region",
