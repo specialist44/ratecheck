@@ -304,6 +304,7 @@ export async function downloadResultsPdf(params: {
 
   const TURKISH_ASCII: Record<string, string> = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u" };
   const safeRole = (role || (lang === "tr" ? "rapor" : "report"))
+    .replace(/İ/g, "i") // JS'in locale-agnostic toLowerCase()'i "İ"yi "i" + U+0307 (combining dot above) yapar; harita bu işareti tanımadığı için fazladan tire kalırdı
     .toLowerCase()
     .split("").map((ch) => TURKISH_ASCII[ch] ?? ch).join("")
     .replace(/[^a-z0-9]+/g, "-")
