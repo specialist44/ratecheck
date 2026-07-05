@@ -3,6 +3,7 @@ import { GRAPHIC_DESIGNER_CATEGORIES } from "./graphicDesigner";
 import { BRAND_DESIGNER_CATEGORIES } from "./brandDesigner";
 import { UI_UX_DESIGNER_CATEGORIES } from "./uiUxDesigner";
 import { ILLUSTRATOR_CATEGORIES } from "./illustrator";
+import { CONCEPT_ARTIST_CATEGORIES } from "./conceptArtist";
 
 // Diğer roller eklendikçe burada birer satır olarak kaydedilecek.
 const REGISTRY: Record<string, RoleCategorySet> = {
@@ -10,6 +11,7 @@ const REGISTRY: Record<string, RoleCategorySet> = {
   "brand-designer": BRAND_DESIGNER_CATEGORIES,
   "ui-ux-product-designer": UI_UX_DESIGNER_CATEGORIES,
   "illustration": ILLUSTRATOR_CATEGORIES,
+  "concept-art": CONCEPT_ARTIST_CATEGORIES,
 };
 
 export function getRoleCategories(roleId: string): RoleCategoryDef[] {

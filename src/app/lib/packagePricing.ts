@@ -1,9 +1,9 @@
 import type { Currency, Experience, Region } from "../types";
 import { CUR_RATE } from "./pricing";
-import type { RoleCategoryDef } from "../data/packages/types";
+import type { PackagePriceTable } from "../data/packages/types";
 
-export function resolveCategoryPrice(def: RoleCategoryDef, region: Region, exp: Experience, currency: Currency): number {
-  return def.price[region][exp] * CUR_RATE[currency];
+export function resolveCategoryPrice(priceTable: PackagePriceTable, region: Region, exp: Experience, currency: Currency): number {
+  return priceTable[region][exp] * CUR_RATE[currency];
 }
 
 // Pozisyon 0 = en pahalı kategori, tam fiyat. Sonraki pozisyonlar kademeli indirimli.

@@ -38,4 +38,5 @@ export function getDefaultHours(role: string, lang: Lang): number {
   return idx >= 0 ? ROLE_DEFAULT_HOURS[idx] : DEFAULT_HOURS_FALLBACK;
 }
 
-export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[] };
+// variantIds: kategoriId -> mecra id (sadece cat.variants olan kategoriler için, bkz. data/packages/types.ts)
+export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[]; variantIds: Record<string, string> };

@@ -93,13 +93,18 @@ export const ADOBE_SUITE_TOOLTIP = {
   en: "Photoshop, Illustrator, InDesign and other Adobe applications",
 };
 
-// İllüstrasyon rolüne özel: Araçlar grubu düz liste değil, önce Geleneksel/Dijital
-// üst seçimi yapılıyor, sonra o gruba ait araçlar checkbox olarak açılıyor
-// (bkz. HomeScreen.tsx). id: stabil, dilden bağımsız — selectedChips bununla saklanır.
-export interface IllustrationTool { id: string; label: string; labelEn: string; tooltip?: string; tooltipEn?: string }
-export interface IllustrationToolGroup { id: "digital" | "traditional"; label: string; labelEn: string; tools: IllustrationTool[] }
+// İllüstrasyon ve Konsept Sanatı rollerine özel: Araçlar grubu düz liste değil, önce
+// Geleneksel/Dijital üst seçimi yapılıyor, sonra o gruba ait araçlar checkbox olarak
+// açılıyor (bkz. HomeScreen.tsx). İki rol de AYNI araç setini paylaşıyor, bu yüzden tek
+// bir tanım altında tutulup her iki roleId için de kullanılıyor (kod tekrarı yok).
+// id: stabil, dilden bağımsız — selectedChips bununla saklanır.
+export interface MediumTool { id: string; label: string; labelEn: string; tooltip?: string; tooltipEn?: string }
+export interface MediumToolGroup { id: "digital" | "traditional"; label: string; labelEn: string; tools: MediumTool[] }
 
-export const ILLUSTRATION_TOOL_GROUPS: IllustrationToolGroup[] = [
+// Bu araç grubu ayrımını (Geleneksel/Dijital toggle) kullanan roller.
+export const MEDIUM_TOOL_GROUP_ROLE_IDS = ["illustration", "concept-art"];
+
+export const TRADITIONAL_DIGITAL_TOOL_GROUPS: MediumToolGroup[] = [
   {
     id: "digital",
     label: "Dijital",
@@ -129,16 +134,18 @@ export const ILLUSTRATION_TOOL_GROUPS: IllustrationToolGroup[] = [
   },
 ];
 
+const MEDIUM_TOOL_IDS = TRADITIONAL_DIGITAL_TOOL_GROUPS.flatMap((g) => g.tools.map((t) => t.id));
+
 // roleId -> araç listesi (TR/EN'de aynı, sadece çevre metin dile göre değişir).
-// "illustration" burada da yer alıyor (düz liste, gruplar için bkz. ILLUSTRATION_TOOL_GROUPS)
-// çünkü toolsSelected/ALL_TOOLS mantığı hâlâ bu flat listeyi okuyor — "en az bir araç seçildi mi"
-// kontrolü grup ayrımından bağımsız.
+// "illustration"/"concept-art" burada da yer alıyor (düz liste, gruplar için bkz.
+// TRADITIONAL_DIGITAL_TOOL_GROUPS) çünkü toolsSelected/ALL_TOOLS mantığı hâlâ bu flat
+// listeyi okuyor — "en az bir araç seçildi mi" kontrolü grup ayrımından bağımsız.
 export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
   "graphic-designer": ["Figma", "Adobe Suite", "Canva"],
   "brand-designer": ["Adobe Suite", "Figma", "Canva"],
   "ui-ux-product-designer": ["Figma", "Adobe XD", "Sketch", "Miro"],
-  "illustration": ILLUSTRATION_TOOL_GROUPS.flatMap((g) => g.tools.map((t) => t.id)),
-  "concept-art": ["Photoshop", "Procreate", "Clip Studio Paint", "Adobe Illustrator"],
+  "illustration": MEDIUM_TOOL_IDS,
+  "concept-art": MEDIUM_TOOL_IDS,
   "animator": ["After Effects", "Toon Boom", "Blender", "Clip Studio Paint"],
   "motion-vfx": ["After Effects", "Cinema 4D", "Blender"],
   "web-developer": ["React", "WordPress", "Shopify", "Webflow"],

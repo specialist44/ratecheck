@@ -12,6 +12,7 @@ export interface HomeFormState {
   country: string;
   selectedChips: string[];
   selectedCategoryIds: string[];
+  selectedVariantIds: Record<string, string>;
 }
 
 export function saveHomeFormState(state: HomeFormState) {
@@ -47,6 +48,10 @@ export function loadHomeFormState(): Partial<HomeFormState> {
         : undefined,
       selectedCategoryIds: Array.isArray(parsed.selectedCategoryIds) && parsed.selectedCategoryIds.every((c: unknown) => typeof c === "string")
         ? parsed.selectedCategoryIds
+        : undefined,
+      selectedVariantIds: parsed.selectedVariantIds && typeof parsed.selectedVariantIds === "object"
+        && Object.entries(parsed.selectedVariantIds).every(([k, v]) => typeof k === "string" && typeof v === "string")
+        ? parsed.selectedVariantIds
         : undefined,
     };
   } catch {

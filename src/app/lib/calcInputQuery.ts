@@ -12,6 +12,7 @@ export function calcInputToSearchParams(input: CalcInput): URLSearchParams {
     region: input.region,
     currency: input.currency,
     categories: input.categoryIds.join(","),
+    variants: Object.entries(input.variantIds).map(([catId, variantId]) => `${catId}:${variantId}`).join(","),
   });
 }
 
@@ -22,11 +23,20 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
   const region = params.get("region");
   const currency = params.get("currency");
   const categories = params.get("categories");
+  const variants = params.get("variants");
+  const variantIds: Record<string, string> = {};
+  if (variants) {
+    for (const pair of variants.split(",").filter(Boolean)) {
+      const [catId, variantId] = pair.split(":");
+      if (catId && variantId) variantIds[catId] = variantId;
+    }
+  }
   return {
     roleId: params.get("roleId") ?? "",
     experience: EXPERIENCES.includes(experience as Experience) ? (experience as Experience) : "mid",
     region: REGIONS.includes(region as Region) ? (region as Region) : "eastern",
     currency: CURRENCIES.includes(currency as Currency) ? (currency as Currency) : "EUR",
     categoryIds: categories ? categories.split(",").filter(Boolean) : [],
+    variantIds,
   };
 }

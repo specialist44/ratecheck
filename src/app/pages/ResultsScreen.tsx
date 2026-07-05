@@ -24,7 +24,7 @@ export function ResultsScreen() {
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { roleId, experience, region, currency: initialCurrency, categoryIds } = calcInputFromSearchParams(searchParams);
+  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -54,7 +54,10 @@ export function ResultsScreen() {
   const locale = lang === "tr" ? "tr-TR" : "en-US";
 
   const allCategories = roleId ? getRoleCategories(roleId) : [];
-  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id));
+  // Mecra'lı bir kategori, mecrası seçilmemişse (elle değiştirilmiş/eski URL) hesaba katılmaz.
+  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && (!c.variants || variantIds[c.id]));
+  const priceTableFor = (cat: (typeof allCategories)[number]) =>
+    cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!;
 
   // Rol için henüz paket verisi eklenmemiş (data/packages'te kaydı yok).
   if (allCategories.length === 0) {
@@ -107,17 +110,20 @@ export function ResultsScreen() {
   }
 
   const quote = calculatePackageQuote(
-    selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(cat, region, experience, currency) })),
+    selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(priceTableFor(cat), region, experience, currency) })),
   );
   const categoryLabel = (id: string) => {
     const cat = selectedCategories.find((c) => c.id === id)!;
-    return lang === "tr" ? cat.label : cat.labelEn;
+    const base = lang === "tr" ? cat.label : cat.labelEn;
+    if (!cat.variants) return base;
+    const variant = cat.variants.find((v) => v.id === variantIds[id])!;
+    return `${base} — ${lang === "tr" ? variant.label : variant.labelEn}`;
   };
   const hasDiscount = quote.items.length > 1;
 
   const regions = REGION_KEYS.map((r) => {
     const rq = calculatePackageQuote(
-      selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(cat, r, experience, currency) })),
+      selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(priceTableFor(cat), r, experience, currency) })),
     );
     return {
       key: r,

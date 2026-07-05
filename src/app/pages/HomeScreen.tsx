@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, ILLUSTRATION_TOOL_GROUPS, ADOBE_SUITE_TOOLTIP } from "../data/roles";
+import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, TRADITIONAL_DIGITAL_TOOL_GROUPS, MEDIUM_TOOL_GROUP_ROLE_IDS, ADOBE_SUITE_TOOLTIP } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
@@ -14,8 +14,6 @@ import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../components/ui/tooltip";
-
-const ILLUSTRATION_ROLE_ID = "illustration";
 
 const EMPTY_TOOLS: string[] = [];
 const ALL_TOOLS = new Set(Object.values(TOOLS_BY_ROLE_ID).flat());
@@ -50,27 +48,41 @@ export function HomeScreen() {
   const [country, setCountry] = useState(saved.country ?? "Türkiye");
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
+  const [selectedVariantIds, setSelectedVariantIds] = useState<Record<string, string>>(saved.selectedVariantIds ?? {});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [toolGroupId, setToolGroupId] = useState<"digital" | "traditional" | null>(null);
 
   const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
-  const isIllustration = roleId === ILLUSTRATION_ROLE_ID;
+  const hasToolGroups = MEDIUM_TOOL_GROUP_ROLE_IDS.includes(roleId);
 
   useEffect(() => {
-    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds });
-  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds]);
+    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds });
+  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds]);
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
   }, [roleId]);
 
   useEffect(() => {
-    if (!isIllustration) setToolGroupId(null);
-  }, [isIllustration]);
+    if (!hasToolGroups) setToolGroupId(null);
+  }, [hasToolGroups]);
 
   useEffect(() => {
     setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
+  }, [roleId]);
+
+  // Mecra seçimleri kategori id'sine bağlı — rol değişince (dolayısıyla packageCategories
+  // değişince) artık var olmayan kategori/mecra kombinasyonlarını temizle.
+  useEffect(() => {
+    setSelectedVariantIds((prev) => {
+      const next: Record<string, string> = {};
+      for (const [catId, variantId] of Object.entries(prev)) {
+        const cat = packageCategories.find((c) => c.id === catId);
+        if (cat?.variants?.some((v) => v.id === variantId)) next[catId] = variantId;
+      }
+      return next;
+    });
   }, [roleId]);
 
   const toggleChip = (chip: string) =>
@@ -79,11 +91,25 @@ export function HomeScreen() {
   const sectorChipIds = chips.flatMap((g) => g.items.map((i) => i.id));
   const sectorSelected = sectorChipIds.some((id) => selectedChips.includes(id));
   const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
-  const categorySelected = packageCategories.length === 0 || selectedCategoryIds.length > 0;
+  // Mecra'lı bir kategori seçiliyken kendi mecrası da seçilmeden "hazır" sayılmaz.
+  const variantsReady = selectedCategoryIds.every((id) => {
+    const cat = packageCategories.find((c) => c.id === id);
+    return !cat?.variants || !!selectedVariantIds[id];
+  });
+  const categorySelected = packageCategories.length === 0 || (selectedCategoryIds.length > 0 && variantsReady);
   const canCalculate = !!roleId && categorySelected && sectorSelected && toolsSelected;
 
   const toggleCategory = (id: string) =>
-    setSelectedCategoryIds((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
+    setSelectedCategoryIds((p) => {
+      if (p.includes(id)) {
+        setSelectedVariantIds((v) => { const next = { ...v }; delete next[id]; return next; });
+        return p.filter((c) => c !== id);
+      }
+      return [...p, id];
+    });
+
+  const selectVariant = (categoryId: string, variantId: string) =>
+    setSelectedVariantIds((p) => ({ ...p, [categoryId]: variantId }));
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -130,30 +156,50 @@ export function HomeScreen() {
                     const checked = selectedCategoryIds.includes(cat.id);
                     const items = lang === "tr" ? cat.items : cat.itemsEn;
                     return (
-                      <div key={cat.id}
-                        role="checkbox" aria-checked={checked} tabIndex={0}
-                        onClick={() => toggleCategory(cat.id)}
-                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCategory(cat.id); } }}
-                        className={`w-full flex items-start gap-3 px-3.5 py-2.5 rounded-xl border text-left transition-all cursor-pointer ${checked ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
-                        <span className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center shrink-0 ${checked ? "border-background bg-background" : "border-border"}`}>
-                          {checked && <Check size={11} className="text-foreground" />}
-                        </span>
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-sm font-medium">{lang === "tr" ? cat.label : cat.labelEn}</span>
-                          <span className={`block text-xs mt-0.5 ${checked ? "text-background/60" : "text-muted-foreground"}`}>{items.join(", ")}</span>
-                        </span>
-                        <Dialog>
-                          <DialogTriggerButton checked={checked} label={t.categoryDetailsLink} />
-                          <DialogContent onClick={(e) => e.stopPropagation()}>
-                            <DialogHeader>
-                              <DialogTitle>{lang === "tr" ? cat.label : cat.labelEn}</DialogTitle>
-                            </DialogHeader>
-                            <p className="text-xs text-muted-foreground -mt-2">{t.categoryDetailsTitle}</p>
-                            <ul className="list-disc pl-5 space-y-1.5 text-sm">
-                              {items.map((item) => <li key={item}>{item}</li>)}
-                            </ul>
-                          </DialogContent>
-                        </Dialog>
+                      <div key={cat.id}>
+                        <div
+                          role="checkbox" aria-checked={checked} tabIndex={0}
+                          onClick={() => toggleCategory(cat.id)}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCategory(cat.id); } }}
+                          className={`w-full flex items-start gap-3 px-3.5 py-2.5 rounded-xl border text-left transition-all cursor-pointer ${checked ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
+                          <span className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center shrink-0 ${checked ? "border-background bg-background" : "border-border"}`}>
+                            {checked && <Check size={11} className="text-foreground" />}
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <span className="block text-sm font-medium">{lang === "tr" ? cat.label : cat.labelEn}</span>
+                            <span className={`block text-xs mt-0.5 ${checked ? "text-background/60" : "text-muted-foreground"}`}>{items.join(", ")}</span>
+                          </span>
+                          <Dialog>
+                            <DialogTriggerButton checked={checked} label={t.categoryDetailsLink} />
+                            <DialogContent onClick={(e) => e.stopPropagation()}>
+                              <DialogHeader>
+                                <DialogTitle>{lang === "tr" ? cat.label : cat.labelEn}</DialogTitle>
+                              </DialogHeader>
+                              <p className="text-xs text-muted-foreground -mt-2">{t.categoryDetailsTitle}</p>
+                              <ul className="list-disc pl-5 space-y-1.5 text-sm">
+                                {items.map((item) => <li key={item}>{item}</li>)}
+                              </ul>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        {checked && cat.variants && (
+                          <div className="mt-2 ml-2 pl-3.5 border-l-2 border-border">
+                            <p className="text-xs font-medium text-muted-foreground mb-1.5">{t.categoryVariantLabel}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.variants.map((variant) => {
+                                const variantChecked = selectedVariantIds[cat.id] === variant.id;
+                                return (
+                                  <button key={variant.id} type="button" onClick={() => selectVariant(cat.id, variant.id)}
+                                    aria-pressed={variantChecked}
+                                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${variantChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                    {variantChecked && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? variant.label : variant.labelEn}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {attemptedSubmit && !selectedVariantIds[cat.id] && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -180,11 +226,11 @@ export function HomeScreen() {
                     {attemptedSubmit && !sectorSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                   </div>
                 ))}
-                {isIllustration ? (
+                {hasToolGroups ? (
                   <div>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
                     <div className="flex flex-wrap gap-1.5 mb-2">
-                      {ILLUSTRATION_TOOL_GROUPS.map((group) => (
+                      {TRADITIONAL_DIGITAL_TOOL_GROUPS.map((group) => (
                         <button key={group.id} onClick={() => setToolGroupId(group.id)}
                           className={`text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupId === group.id ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                           {lang === "tr" ? group.label : group.labelEn}
@@ -193,7 +239,7 @@ export function HomeScreen() {
                     </div>
                     {toolGroupId && (
                       <div className="flex flex-wrap gap-1.5">
-                        {ILLUSTRATION_TOOL_GROUPS.find((g) => g.id === toolGroupId)!.tools.map((tool) => {
+                        {TRADITIONAL_DIGITAL_TOOL_GROUPS.find((g) => g.id === toolGroupId)!.tools.map((tool) => {
                           const label = lang === "tr" ? tool.label : tool.labelEn;
                           const tooltip = lang === "tr" ? tool.tooltip : tool.tooltipEn;
                           const chip = (
@@ -269,7 +315,7 @@ export function HomeScreen() {
               aria-disabled={!canCalculate}
               onClick={() => {
                 if (!canCalculate) { setAttemptedSubmit(true); return; }
-                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds };
+                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>

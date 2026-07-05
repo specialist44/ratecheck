@@ -20,6 +20,7 @@ export const EN: typeof TR = {
   categoriesSub: "(select at least 1)",
   categoryDetailsLink: "Details",
   categoryDetailsTitle: "What's included in this category?",
+  categoryVariantLabel: "Which medium?",
   labelExtras: "Additional info",
   requiredFieldWarning: "Please fill in the required fields so we can give you a more accurate result.",
   groupSector: "Sector",

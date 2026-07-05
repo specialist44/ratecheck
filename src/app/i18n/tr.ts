@@ -20,6 +20,7 @@ export const TR = {
   categoriesSub: "(en az 1 tane seç)",
   categoryDetailsLink: "Detaylar",
   categoryDetailsTitle: "Bu kategori neleri kapsıyor?",
+  categoryVariantLabel: "Hangi mecra için?",
   labelExtras: "Ek bilgiler",
   requiredFieldWarning: "Daha doğru sonuç verebilmemiz için lütfen gerekli alanları doldurun.",
   groupSector: "Sektör",
