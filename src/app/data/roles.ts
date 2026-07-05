@@ -149,7 +149,7 @@ export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
   "animator": ["Adobe Suite", "Toon Boom Harmony", "OpenToonz", "Tahoma2D", "Clip Studio Paint", "Krita", "Blender", "Cinema 4D", "DragonFrame"],
   "motion-vfx": ["Adobe Suite", "Cinema 4D", "Blender", "Nuke", "Houdini"],
   "web-developer": ["Figma", "React", "WordPress", "Shopify", "Webflow", "Node.js", "PostgreSQL/MongoDB"],
-  "mobile-app-developer": ["React Native", "Swift", "Kotlin", "Flutter"],
+  "mobile-app-developer": ["Figma", "Swift/Xcode", "Kotlin/Android Studio", "Flutter", "React Native", "Firebase"],
   "writing-content": ["Google Docs", "Notion", "Canva", "SEMrush"],
   "digital-marketing": ["Google Ads", "Meta Ads Manager", "Google Analytics", "Mailchimp"],
   "production-media": ["Premiere Pro", "DaVinci Resolve", "Lightroom", "Final Cut Pro"],
