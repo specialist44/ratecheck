@@ -10,8 +10,9 @@ import { WEB_DEVELOPER_CATEGORIES } from "./webDeveloper";
 import { MOBILE_APP_DEVELOPER_CATEGORIES } from "./mobileAppDeveloper";
 import { WRITER_CONTENT_CREATOR_CATEGORIES } from "./writerContentCreator";
 import { DIGITAL_MARKETING_CATEGORIES } from "./digitalMarketing";
+import { PRODUCTION_MEDIA_CATEGORIES } from "./productionMedia";
 
-// Diğer roller eklendikçe burada birer satır olarak kaydedilecek.
+// 12/12 rol tamamlandı.
 const REGISTRY: Record<string, RoleCategorySet> = {
   "graphic-designer": GRAPHIC_DESIGNER_CATEGORIES,
   "brand-designer": BRAND_DESIGNER_CATEGORIES,
@@ -24,6 +25,7 @@ const REGISTRY: Record<string, RoleCategorySet> = {
   "mobile-app-developer": MOBILE_APP_DEVELOPER_CATEGORIES,
   "writing-content": WRITER_CONTENT_CREATOR_CATEGORIES,
   "digital-marketing": DIGITAL_MARKETING_CATEGORIES,
+  "production-media": PRODUCTION_MEDIA_CATEGORIES,
 };
 
 export function getRoleCategories(roleId: string): RoleCategoryDef[] {

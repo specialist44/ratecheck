@@ -152,5 +152,5 @@ export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
   "mobile-app-developer": ["Figma", "Swift/Xcode", "Kotlin/Android Studio", "Flutter", "React Native", "Firebase"],
   "writing-content": ["Google Docs", "Notion", "Grammarly", "SurferSEO/Ahrefs", "Canva"],
   "digital-marketing": ["Meta Business Suite", "Hootsuite/Buffer", "Canva", "Ahrefs/SEMrush", "Google Analytics/Search Console"],
-  "production-media": ["Premiere Pro", "DaVinci Resolve", "Lightroom", "Final Cut Pro"],
+  "production-media": ["Premiere Pro", "Final Cut Pro", "DaVinci Resolve", "Lightroom", "Descript/Audacity"],
 };
