@@ -67,7 +67,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
           label: "Oyun",
           labelEn: "Game",
           price: {
-            turkey: { junior: 25, mid: 40, senior: 58 },
+            turkey: { junior: 25, mid: 40, senior: 57 },
             eastern: { junior: 112, mid: 181, senior: 259 },
             western: { junior: 288, mid: 465, senior: 665 },
           },
@@ -116,7 +116,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
           label: "Sinema/Dizi",
           labelEn: "Film/TV",
           price: {
-            turkey: { junior: 25, mid: 40, senior: 58 },
+            turkey: { junior: 25, mid: 40, senior: 57 },
             eastern: { junior: 112, mid: 181, senior: 259 },
             western: { junior: 288, mid: 465, senior: 665 },
           },

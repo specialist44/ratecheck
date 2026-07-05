@@ -23,8 +23,8 @@ export const DIGITAL_MARKETING_CATEGORIES: RoleCategorySet = {
       items: ["Kapsamlı site içi teknik SEO denetimi (Core Web Vitals, indexleme hataları)", "Anahtar kelime araştırması (Keyword Research) ve içerik boşluğu (Gap) analizi", "On-Page Optimizasyon (Title, Meta Description, H1/H2 yapılandırması)", "Off-Page Stratejisi (Kaliteli backlink inşası ve PR yönetimi)", "Yerel SEO (Google Benim İşletmem) harita optimizasyonları"],
       itemsEn: ["Comprehensive on-site technical SEO audit (Core Web Vitals, indexing errors)", "Keyword research and content gap analysis", "On-page optimization (title, meta description, H1/H2 structuring)", "Off-page strategy (quality backlink building and PR management)", "Local SEO (Google Business Profile) map optimizations"],
       price: {
-        turkey: { junior: 107, mid: 173, senior: 247 },
-        eastern: { junior: 307, mid: 495, senior: 708 },
+        turkey: { junior: 101, mid: 163, senior: 233 },
+        eastern: { junior: 290, mid: 468, senior: 669 },
         western: { junior: 558, mid: 900, senior: 1287 },
       },
     },
