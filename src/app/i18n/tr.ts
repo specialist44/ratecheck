@@ -48,6 +48,8 @@ export const TR = {
   pdfTitle: "Bu raporu PDF olarak indir",
   pdfDesc: "Müşteriye göstermek veya arşivlemek için — tüm bölgesel karşılaştırmalar ve ücret önerileri dahil.",
   pdfBtn: "Raporu İndir (PDF)",
+  pdfDownloading: "İndiriliyor...",
+  pdfError: "PDF oluşturulamadı, tekrar deneyin.",
   pdfLogoLabel: "Logonu ekle (opsiyonel)",
   pdfLogoSub: "PNG veya SVG — PDF'in sağ üst köşesine otomatik yerleşir.",
   pdfLogoUpload: "Yükle",

@@ -28,6 +28,8 @@ export function ResultsScreen() {
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const handleLogoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -219,19 +221,30 @@ export function ResultsScreen() {
               </div>
             </div>
             <button
-              onClick={() => {
-                downloadResultsPdf({
-                  lang, role: roleLabel, expLabel, regionLabel, symbol, locale, logo,
-                  categories: quote.items.map((item) => ({ label: categoryLabel(item.categoryId), price: item.fullPrice })),
-                  discount: hasDiscount ? quote.subtotal - quote.total : 0,
-                  total: quote.total,
-                  totalSub,
-                  regions,
-                }).catch(console.error);
+              disabled={isDownloading}
+              onClick={async () => {
+                setIsDownloading(true);
+                setPdfError(null);
+                try {
+                  await downloadResultsPdf({
+                    lang, role: roleLabel, expLabel, regionLabel, symbol, locale, logo,
+                    categories: quote.items.map((item) => ({ label: categoryLabel(item.categoryId), price: item.fullPrice })),
+                    discount: hasDiscount ? quote.subtotal - quote.total : 0,
+                    total: quote.total,
+                    totalSub,
+                    regions,
+                  });
+                } catch (err) {
+                  console.error(err);
+                  setPdfError(t.pdfError);
+                } finally {
+                  setIsDownloading(false);
+                }
               }}
-              className="mt-4 w-full py-2.5 bg-foreground text-background rounded-xl text-sm font-semibold hover:opacity-85 transition-all flex items-center justify-center gap-2">
-              <Download size={15} />{t.pdfBtn}
+              className="mt-4 w-full py-2.5 bg-foreground text-background rounded-xl text-sm font-semibold hover:opacity-85 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+              <Download size={15} />{isDownloading ? t.pdfDownloading : t.pdfBtn}
             </button>
+            {pdfError && <p className="text-[11px] text-red-500 mt-2">{pdfError}</p>}
 
             <div className="mt-4 pt-4 border-t border-border flex items-center gap-3">
               {logo ? (

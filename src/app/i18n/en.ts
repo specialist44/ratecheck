@@ -47,6 +47,8 @@ export const EN: typeof TR = {
   pdfTitle: "Download this report as PDF",
   pdfDesc: "To share with a client or archive — all regional comparisons and rate suggestions included.",
   pdfBtn: "Download Report (PDF)",
+  pdfDownloading: "Downloading...",
+  pdfError: "Couldn't generate the PDF, please try again.",
   pdfLogoLabel: "Add your logo (optional)",
   pdfLogoSub: "PNG or SVG — placed automatically in the PDF's top-right corner.",
   pdfLogoUpload: "Upload",
