@@ -1,5 +1,5 @@
 // 12 meslek grubu (30 ayrı rolden konsolide edildi — bkz. memory-bank.md).
-// ROLES_TR, ROLES_EN, ROLE_IDS, ROLE_DEFAULT_HOURS index-hizalı, HEP BİRLİKTE değişir.
+// ROLES_TR, ROLES_EN, ROLE_IDS index-hizalı, HEP BİRLİKTE değişir.
 export const ROLES_TR = [
   "Grafik Tasarımcı",
   "Marka Tasarımcısı",
@@ -54,24 +54,6 @@ export function getRoleLabel(roleId: string, lang: "tr" | "en"): string {
   const index = ROLE_IDS.indexOf(roleId);
   return index === -1 ? "" : (lang === "tr" ? ROLES_TR : ROLES_EN)[index];
 }
-
-// Typical market-average project length per role, in hours. Index-aligned with
-// ROLES_TR / ROLES_EN / ROLE_IDS so the calculator can suggest a duration instead
-// of asking the user to guess one before seeing any rate data.
-export const ROLE_DEFAULT_HOURS = [
-  25,  // Grafik Tasarımcı
-  45,  // Marka Tasarımcısı
-  45,  // UI/UX ve Ürün Tasarımcısı
-  25,  // İllüstrasyon
-  25,  // Konsept Sanatı
-  55,  // Animatör
-  45,  // Motion Tasarımcı ve VFX
-  85,  // Web Geliştirici
-  120, // Mobil Uygulama Geliştirici
-  20,  // Yazarlık ve İçerik
-  20,  // Dijital Pazarlama
-  20,  // Prodüksiyon ve Medya
-];
 
 // id: dilden bağımsız stabil anahtar — seçili sektör chip'lerini bununla
 // saklıyoruz, dil değişince label değişir ama seçim kaybolmaz.

@@ -1,5 +1,4 @@
-import type { Currency, Experience, Lang, Region } from "../types";
-import { ROLES_TR, ROLES_EN, ROLE_DEFAULT_HOURS } from "../data/roles";
+import type { Currency, Experience, Region } from "../types";
 
 // Multipliers relative to Eastern Europe / Mid baseline
 export const REGION_MULT: Record<Region, number> = { turkey: 0.55, eastern: 1.0, western: 1.52 };
@@ -13,11 +12,6 @@ export function formatPrice(baseEur: [number, number], region: Region, exp: Expe
   return `${s}${Math.round(baseEur[0] * m)}–${s}${Math.round(baseEur[1] * m)}`;
 }
 
-// ─── Hourly calculator ────────────────────────────────────────────────────────
-
-// Baseline hourly rate = Eastern Europe / Mid-level, in EUR (same approach as CATALOG baseEur)
-const BASE_HOURLY_EUR = 52;
-
 // Home screen only collects a specific country, not a region bucket — map it here.
 export const COUNTRY_REGION: Record<string, Region> = {
   "Türkiye": "turkey",
@@ -26,17 +20,6 @@ export const COUNTRY_REGION: Record<string, Region> = {
   "Fransa": "western",
   "Polonya": "eastern",
 };
-
-export function hourlyRate(region: Region, exp: Experience, cur: Currency): number {
-  return BASE_HOURLY_EUR * REGION_MULT[region] * EXP_MULT[exp] * CUR_RATE[cur];
-}
-
-const DEFAULT_HOURS_FALLBACK = 40;
-export function getDefaultHours(role: string, lang: Lang): number {
-  const roles = lang === "tr" ? ROLES_TR : ROLES_EN;
-  const idx = roles.indexOf(role);
-  return idx >= 0 ? ROLE_DEFAULT_HOURS[idx] : DEFAULT_HOURS_FALLBACK;
-}
 
 // variantIds: kategoriId -> mecra id (sadece cat.variants olan kategoriler için, bkz. data/packages/types.ts)
 // subItemIds: kategoriId -> seçilen alt kalem id listesi (sadece cat.subItems olan kategoriler için, çoklu seçim)

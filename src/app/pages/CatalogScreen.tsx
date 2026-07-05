@@ -39,7 +39,6 @@ export function CatalogScreen() {
 
   const grouped = useMemo(() => {
     if (activeCategory !== "all") {
-      const cat = lang === "tr" ? activeCategory : activeCategory;
       return { [activeCategory]: filtered };
     }
     return filtered.reduce<Record<string, CatalogJob[]>>((acc, job) => {
