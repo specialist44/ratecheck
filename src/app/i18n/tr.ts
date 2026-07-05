@@ -6,7 +6,7 @@ export const TR = {
   navAbout: "Hakkımızda / İletişim",
   // Home
   heroTitle: "Bu iş için ne kadar istemelisin?",
-  heroSub: "Rakipler, bölgeler ve deneyim düzeyine göre — güncel piyasa araştırmasıyla desteklenen ücret önerisi.",
+  heroSub: "Rol, bölge ve deneyime göre — gerçek, güncel (2026) uluslararası piyasa araştırmasına dayalı ücret önerisi. Bu rakamlar tahmini değil, freelancer'ların kendini ucuza satmaması için gerçek piyasa değerini yansıtır.",
   labelRole: "Rolün",
   rolePlaceholder: "— Rol seçin —",
   labelExp: "Deneyim süresi",
@@ -67,6 +67,8 @@ export const TR = {
   catalogClear: "Filtreyi temizle",
   catalogGoCalc: "Saatlik ücret hesabı yapmak ister misiniz?",
   catalogGoCalcSub: "Uzun soluklu projeler veya sürekli işbirlikleri için saatlik ve proje bazlı hesap aracını kullanın.",
+  catalogPriceNoteToggle: "Bu fiyatlar neden yüksek görünüyor?",
+  catalogPriceNote: "RateCheck, freelancer'ların kendini ucuza satmasını önlemek için gerçek, güncel (2026) uluslararası piyasa araştırmasına dayalı rakamlar gösterir — tahmini veya düşük rakamlar değil. Bir işveren bu fiyatı yüksek bulabilir, ama bu, freelancer'ın gerçek piyasa değerini yansıtan dürüst bir başlangıç noktasıdır. Pazarlık her zaman mümkündür, ama düşük başlamak asla önerilmez.",
   // How it works
   howLabel: "Nasıl Çalışır?",
   howTitle: "Rakamlar nereden geliyor?",

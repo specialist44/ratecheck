@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, Search, X } from "lucide-react";
+import { ArrowRight, Search, X, Info, ChevronDown } from "lucide-react";
 import type { Currency, Experience, Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CATALOG } from "../data/catalog";
@@ -19,6 +19,7 @@ export function CatalogScreen() {
   const [currency, setCurrency] = useState<Currency>("EUR");
   const [region, setRegion] = useState<Region | "all">("all");
   const [experience, setExperience] = useState<Experience>("mid");
+  const [priceNoteOpen, setPriceNoteOpen] = useState(false);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(CATALOG.map((j) => lang === "tr" ? j.category : j.categoryEn)));
@@ -72,6 +73,21 @@ export function CatalogScreen() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{t.catalogSub}</p>
+          </div>
+
+          {/* Price note */}
+          <div className="mb-6 md:mb-4 border border-border rounded-xl overflow-hidden">
+            <button onClick={() => setPriceNoteOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-muted/30 transition-colors">
+              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Info size={14} className="shrink-0" />
+                {t.catalogPriceNoteToggle}
+              </span>
+              <ChevronDown size={14} className={`text-muted-foreground shrink-0 transition-transform ${priceNoteOpen ? "rotate-180" : ""}`} />
+            </button>
+            {priceNoteOpen && (
+              <p className="px-4 pb-4 text-xs text-muted-foreground leading-relaxed">{t.catalogPriceNote}</p>
+            )}
           </div>
 
           {/* Search */}
