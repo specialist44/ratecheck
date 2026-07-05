@@ -21,6 +21,7 @@ export const TR = {
   categoryDetailsLink: "Detaylar",
   categoryDetailsTitle: "Bu kategori neleri kapsıyor?",
   categoryVariantLabel: "Hangi mecra için?",
+  categorySubItemLabel: "Hangi kalemler dahil? (birden fazla seçebilirsin)",
   labelExtras: "Ek bilgiler",
   requiredFieldWarning: "Daha doğru sonuç verebilmemiz için lütfen gerekli alanları doldurun.",
   groupSector: "Sektör",

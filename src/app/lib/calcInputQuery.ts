@@ -13,6 +13,7 @@ export function calcInputToSearchParams(input: CalcInput): URLSearchParams {
     currency: input.currency,
     categories: input.categoryIds.join(","),
     variants: Object.entries(input.variantIds).map(([catId, variantId]) => `${catId}:${variantId}`).join(","),
+    subitems: Object.entries(input.subItemIds).filter(([, ids]) => ids.length > 0).map(([catId, ids]) => `${catId}:${ids.join("|")}`).join(","),
   });
 }
 
@@ -24,11 +25,20 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
   const currency = params.get("currency");
   const categories = params.get("categories");
   const variants = params.get("variants");
+  const subitems = params.get("subitems");
   const variantIds: Record<string, string> = {};
   if (variants) {
     for (const pair of variants.split(",").filter(Boolean)) {
       const [catId, variantId] = pair.split(":");
       if (catId && variantId) variantIds[catId] = variantId;
+    }
+  }
+  const subItemIds: Record<string, string[]> = {};
+  if (subitems) {
+    for (const pair of subitems.split(",").filter(Boolean)) {
+      const [catId, ids] = pair.split(":");
+      const itemIds = ids ? ids.split("|").filter(Boolean) : [];
+      if (catId && itemIds.length > 0) subItemIds[catId] = itemIds;
     }
   }
   return {
@@ -38,5 +48,6 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
     currency: CURRENCIES.includes(currency as Currency) ? (currency as Currency) : "EUR",
     categoryIds: categories ? categories.split(",").filter(Boolean) : [],
     variantIds,
+    subItemIds,
   };
 }

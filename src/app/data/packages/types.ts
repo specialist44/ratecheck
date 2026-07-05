@@ -14,17 +14,29 @@ export interface RoleCategoryVariant {
   price: PackagePriceTable;
 }
 
+// Bir kategorinin ÇOKLU SEÇİLEBİLEN alt kalemi — mecra (variant, tekli seçim)
+// aksine, kullanıcı istediği kadar alt kalem seçebilir, seçilenlerin fiyatı
+// toplanıp kategori toplamı olur (bkz. Motion Tasarımcı ve VFX, motionVfxArtist.ts).
+export interface RoleCategorySubItem {
+  id: string; // stabil slug (örn. "logo-animations")
+  label: string; // TR
+  labelEn: string; // EN
+  price: PackagePriceTable;
+}
+
 export interface RoleCategoryDef {
   id: string; // stabil slug, dil değişse de sabit kalır (örn. "corporate-identity")
   label: string; // TR
   labelEn: string; // EN
   items: string[]; // kategorinin kapsadığı alt kalemler, TR — checkbox açıklaması + detay listesi bundan türetilir
   itemsEn: string[]; // EN
-  // Bir kategoride ya price ya variants olur, ikisi birden değil: mecra ayrımı
-  // yoksa price kullanılır (mevcut roller), mecra ayrımı varsa variants kullanılır
-  // (Konsept Sanatı) ve price tanımsız kalır.
+  // Bir kategoride price, variants veya subItems'tan sadece BİRİ olur, hiçbir zaman
+  // ikisi birden: mecra/alt-kalem ayrımı yoksa price kullanılır (çoğu rol), tekli
+  // mecra seçimi varsa variants (Konsept Sanatı, Motion/VFX önceki sürüm), çoklu
+  // seçilebilir alt kalem toplaması varsa subItems (Motion Tasarımcı ve VFX) kullanılır.
   price?: PackagePriceTable;
   variants?: RoleCategoryVariant[];
+  subItems?: RoleCategorySubItem[];
 }
 
 export interface RoleCategorySet {

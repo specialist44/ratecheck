@@ -13,6 +13,7 @@ export interface HomeFormState {
   selectedChips: string[];
   selectedCategoryIds: string[];
   selectedVariantIds: Record<string, string>;
+  selectedSubItemIds: Record<string, string[]>;
 }
 
 export function saveHomeFormState(state: HomeFormState) {
@@ -52,6 +53,10 @@ export function loadHomeFormState(): Partial<HomeFormState> {
       selectedVariantIds: parsed.selectedVariantIds && typeof parsed.selectedVariantIds === "object"
         && Object.entries(parsed.selectedVariantIds).every(([k, v]) => typeof k === "string" && typeof v === "string")
         ? parsed.selectedVariantIds
+        : undefined,
+      selectedSubItemIds: parsed.selectedSubItemIds && typeof parsed.selectedSubItemIds === "object"
+        && Object.entries(parsed.selectedSubItemIds).every(([k, v]) => typeof k === "string" && Array.isArray(v) && v.every((id) => typeof id === "string"))
+        ? parsed.selectedSubItemIds
         : undefined,
     };
   } catch {

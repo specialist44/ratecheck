@@ -21,6 +21,7 @@ export const EN: typeof TR = {
   categoryDetailsLink: "Details",
   categoryDetailsTitle: "What's included in this category?",
   categoryVariantLabel: "Which medium?",
+  categorySubItemLabel: "Which items are included? (select multiple)",
   labelExtras: "Additional info",
   requiredFieldWarning: "Please fill in the required fields so we can give you a more accurate result.",
   groupSector: "Sector",

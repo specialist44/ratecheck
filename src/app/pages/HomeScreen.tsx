@@ -49,6 +49,7 @@ export function HomeScreen() {
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
   const [selectedVariantIds, setSelectedVariantIds] = useState<Record<string, string>>(saved.selectedVariantIds ?? {});
+  const [selectedSubItemIds, setSelectedSubItemIds] = useState<Record<string, string[]>>(saved.selectedSubItemIds ?? {});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [toolGroupId, setToolGroupId] = useState<"digital" | "traditional" | null>(null);
 
@@ -57,8 +58,8 @@ export function HomeScreen() {
   const hasToolGroups = MEDIUM_TOOL_GROUP_ROLE_IDS.includes(roleId);
 
   useEffect(() => {
-    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds });
-  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds]);
+    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds });
+  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds]);
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
@@ -85,6 +86,20 @@ export function HomeScreen() {
     });
   }, [roleId]);
 
+  // Alt kalem seçimleri de kategori id'sine bağlı — rol değişince artık var
+  // olmayan kategori/alt-kalem kombinasyonlarını temizle.
+  useEffect(() => {
+    setSelectedSubItemIds((prev) => {
+      const next: Record<string, string[]> = {};
+      for (const [catId, ids] of Object.entries(prev)) {
+        const cat = packageCategories.find((c) => c.id === catId);
+        const valid = ids.filter((id) => cat?.subItems?.some((s) => s.id === id));
+        if (valid.length > 0) next[catId] = valid;
+      }
+      return next;
+    });
+  }, [roleId]);
+
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
 
@@ -93,10 +108,13 @@ export function HomeScreen() {
   const sectorChipIds = chips.flatMap((g) => g.items.map((i) => i.id));
   const sectorSelected = !showSectorChips || sectorChipIds.some((id) => selectedChips.includes(id));
   const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
-  // Mecra'lı bir kategori seçiliyken kendi mecrası da seçilmeden "hazır" sayılmaz.
+  // Mecra'lı bir kategori seçiliyken kendi mecrası, alt-kalemli bir kategoride
+  // en az bir alt kalem seçilmeden "hazır" sayılmaz.
   const variantsReady = selectedCategoryIds.every((id) => {
     const cat = packageCategories.find((c) => c.id === id);
-    return !cat?.variants || !!selectedVariantIds[id];
+    if (cat?.variants) return !!selectedVariantIds[id];
+    if (cat?.subItems) return (selectedSubItemIds[id]?.length ?? 0) > 0;
+    return true;
   });
   const categorySelected = packageCategories.length === 0 || (selectedCategoryIds.length > 0 && variantsReady);
   const canCalculate = !!roleId && categorySelected && sectorSelected && toolsSelected;
@@ -105,6 +123,7 @@ export function HomeScreen() {
     setSelectedCategoryIds((p) => {
       if (p.includes(id)) {
         setSelectedVariantIds((v) => { const next = { ...v }; delete next[id]; return next; });
+        setSelectedSubItemIds((s) => { const next = { ...s }; delete next[id]; return next; });
         return p.filter((c) => c !== id);
       }
       return [...p, id];
@@ -112,6 +131,13 @@ export function HomeScreen() {
 
   const selectVariant = (categoryId: string, variantId: string) =>
     setSelectedVariantIds((p) => ({ ...p, [categoryId]: variantId }));
+
+  const toggleSubItem = (categoryId: string, subItemId: string) =>
+    setSelectedSubItemIds((p) => {
+      const current = p[categoryId] ?? [];
+      const next = current.includes(subItemId) ? current.filter((id) => id !== subItemId) : [...current, subItemId];
+      return { ...p, [categoryId]: next };
+    });
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -200,6 +226,24 @@ export function HomeScreen() {
                               })}
                             </div>
                             {attemptedSubmit && !selectedVariantIds[cat.id] && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
+                          </div>
+                        )}
+                        {checked && cat.subItems && (
+                          <div className="mt-2 ml-2 pl-3.5 border-l-2 border-border">
+                            <p className="text-xs font-medium text-muted-foreground mb-1.5">{t.categorySubItemLabel}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.subItems.map((subItem) => {
+                                const subItemChecked = (selectedSubItemIds[cat.id] ?? []).includes(subItem.id);
+                                return (
+                                  <button key={subItem.id} type="button" onClick={() => toggleSubItem(cat.id, subItem.id)}
+                                    aria-pressed={subItemChecked}
+                                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${subItemChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                    {subItemChecked && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? subItem.label : subItem.labelEn}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {attemptedSubmit && (selectedSubItemIds[cat.id]?.length ?? 0) === 0 && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                           </div>
                         )}
                       </div>
@@ -317,7 +361,7 @@ export function HomeScreen() {
               aria-disabled={!canCalculate}
               onClick={() => {
                 if (!canCalculate) { setAttemptedSubmit(true); return; }
-                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds };
+                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds, subItemIds: selectedSubItemIds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>

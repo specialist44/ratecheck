@@ -147,7 +147,7 @@ export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
   "illustration": MEDIUM_TOOL_IDS,
   "concept-art": MEDIUM_TOOL_IDS,
   "animator": ["Adobe Suite", "Toon Boom Harmony", "OpenToonz", "Tahoma2D", "Clip Studio Paint", "Krita", "Blender", "Cinema 4D", "DragonFrame"],
-  "motion-vfx": ["After Effects", "Cinema 4D", "Blender"],
+  "motion-vfx": ["Adobe Suite", "Cinema 4D", "Blender", "Nuke", "Houdini"],
   "web-developer": ["React", "WordPress", "Shopify", "Webflow"],
   "mobile-app-developer": ["React Native", "Swift", "Kotlin", "Flutter"],
   "writing-content": ["Google Docs", "Notion", "Canva", "SEMrush"],

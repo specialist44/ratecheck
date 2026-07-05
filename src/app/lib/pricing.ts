@@ -39,4 +39,5 @@ export function getDefaultHours(role: string, lang: Lang): number {
 }
 
 // variantIds: kategoriId -> mecra id (sadece cat.variants olan kategoriler için, bkz. data/packages/types.ts)
-export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[]; variantIds: Record<string, string> };
+// subItemIds: kategoriId -> seçilen alt kalem id listesi (sadece cat.subItems olan kategoriler için, çoklu seçim)
+export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[]; variantIds: Record<string, string>; subItemIds: Record<string, string[]> };

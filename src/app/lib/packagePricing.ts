@@ -1,9 +1,18 @@
 import type { Currency, Experience, Region } from "../types";
 import { CUR_RATE } from "./pricing";
-import type { PackagePriceTable } from "../data/packages/types";
+import type { PackagePriceTable, RoleCategorySubItem } from "../data/packages/types";
 
 export function resolveCategoryPrice(priceTable: PackagePriceTable, region: Region, exp: Experience, currency: Currency): number {
   return priceTable[region][exp] * CUR_RATE[currency];
+}
+
+// Çoklu seçilebilen alt kalemlerin (subItems) toplamı — seçilenler arasında
+// artık var olmayan/geçersiz id'ler sessizce yok sayılır (elle bozulmuş URL'ye karşı).
+export function resolveSubItemsPrice(subItems: RoleCategorySubItem[], selectedIds: string[], region: Region, exp: Experience, currency: Currency): number {
+  return selectedIds.reduce((sum, id) => {
+    const item = subItems.find((s) => s.id === id);
+    return item ? sum + resolveCategoryPrice(item.price, region, exp, currency) : sum;
+  }, 0);
 }
 
 // Pozisyon 0 = en pahalı kategori, tam fiyat. Sonraki pozisyonlar kademeli indirimli.

@@ -7,7 +7,7 @@ import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CUR_SYMBOL } from "../lib/pricing";
 import { getRoleLabel } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
-import { resolveCategoryPrice, calculatePackageQuote } from "../lib/packagePricing";
+import { resolveCategoryPrice, resolveSubItemsPrice, calculatePackageQuote } from "../lib/packagePricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
 import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
@@ -24,7 +24,7 @@ export function ResultsScreen() {
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds } = calcInputFromSearchParams(searchParams);
+  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -54,10 +54,19 @@ export function ResultsScreen() {
   const locale = lang === "tr" ? "tr-TR" : "en-US";
 
   const allCategories = roleId ? getRoleCategories(roleId) : [];
-  // Mecra'lı bir kategori, mecrası seçilmemişse (elle değiştirilmiş/eski URL) hesaba katılmaz.
-  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && (!c.variants || c.variants.some((v) => v.id === variantIds[c.id])));
-  const priceTableFor = (cat: (typeof allCategories)[number]) =>
-    cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!;
+  // Mecra'lı bir kategori mecrası seçilmemişse, alt-kalemli bir kategori hiç alt
+  // kalem seçilmemişse (elle değiştirilmiş/eski URL) hesaba katılmaz.
+  const isCategoryValid = (c: (typeof allCategories)[number]) => {
+    if (c.variants) return c.variants.some((v) => v.id === variantIds[c.id]);
+    if (c.subItems) return (subItemIds[c.id] ?? []).some((id) => c.subItems!.some((s) => s.id === id));
+    return true;
+  };
+  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && isCategoryValid(c));
+  const resolvePrice = (cat: (typeof allCategories)[number], r: Region) => {
+    if (cat.subItems) return resolveSubItemsPrice(cat.subItems, subItemIds[cat.id] ?? [], r, experience, currency);
+    const table = cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!;
+    return resolveCategoryPrice(table, r, experience, currency);
+  };
 
   // Rol için henüz paket verisi eklenmemiş (data/packages'te kaydı yok).
   if (allCategories.length === 0) {
@@ -110,20 +119,26 @@ export function ResultsScreen() {
   }
 
   const quote = calculatePackageQuote(
-    selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(priceTableFor(cat), region, experience, currency) })),
+    selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolvePrice(cat, region) })),
   );
   const categoryLabel = (id: string) => {
     const cat = selectedCategories.find((c) => c.id === id)!;
     const base = lang === "tr" ? cat.label : cat.labelEn;
-    if (!cat.variants) return base;
-    const variant = cat.variants.find((v) => v.id === variantIds[id])!;
-    return `${base} — ${lang === "tr" ? variant.label : variant.labelEn}`;
+    if (cat.variants) {
+      const variant = cat.variants.find((v) => v.id === variantIds[id])!;
+      return `${base} — ${lang === "tr" ? variant.label : variant.labelEn}`;
+    }
+    if (cat.subItems) {
+      const count = (subItemIds[id] ?? []).filter((sid) => cat.subItems!.some((s) => s.id === sid)).length;
+      return `${base} — ${lang === "tr" ? `${count} kalem` : `${count} items`}`;
+    }
+    return base;
   };
   const hasDiscount = quote.items.length > 1;
 
   const regions = REGION_KEYS.map((r) => {
     const rq = calculatePackageQuote(
-      selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolveCategoryPrice(priceTableFor(cat), r, experience, currency) })),
+      selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolvePrice(cat, r) })),
     );
     return {
       key: r,
