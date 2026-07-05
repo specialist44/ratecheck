@@ -38,7 +38,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
           label: "Kutu-Kart Oyunu",
           labelEn: "Board/Card Game",
           price: {
-            turkey: { junior: 17, mid: 28, senior: 41 },
+            turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 79, mid: 127, senior: 182 },
             western: { junior: 202, mid: 326, senior: 466 },
           },
@@ -87,7 +87,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
           label: "Mimari/Endüstriyel Tasarım",
           labelEn: "Architectural/Industrial Design",
           price: {
-            turkey: { junior: 17, mid: 28, senior: 41 },
+            turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 79, mid: 127, senior: 182 },
             western: { junior: 202, mid: 326, senior: 466 },
           },

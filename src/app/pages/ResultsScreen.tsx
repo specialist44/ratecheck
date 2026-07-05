@@ -55,7 +55,7 @@ export function ResultsScreen() {
 
   const allCategories = roleId ? getRoleCategories(roleId) : [];
   // Mecra'lı bir kategori, mecrası seçilmemişse (elle değiştirilmiş/eski URL) hesaba katılmaz.
-  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && (!c.variants || variantIds[c.id]));
+  const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && (!c.variants || c.variants.some((v) => v.id === variantIds[c.id])));
   const priceTableFor = (cat: (typeof allCategories)[number]) =>
     cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!;
 

@@ -88,8 +88,10 @@ export function HomeScreen() {
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
 
+  // Konsept Sanatı'nda mecra seçimi zaten Sektör'ün yerini tutuyor, bu yüzden grup hiç gösterilmiyor.
+  const showSectorChips = roleId !== "concept-art";
   const sectorChipIds = chips.flatMap((g) => g.items.map((i) => i.id));
-  const sectorSelected = sectorChipIds.some((id) => selectedChips.includes(id));
+  const sectorSelected = !showSectorChips || sectorChipIds.some((id) => selectedChips.includes(id));
   const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
   // Mecra'lı bir kategori seçiliyken kendi mecrası da seçilmeden "hazır" sayılmaz.
   const variantsReady = selectedCategoryIds.every((id) => {
@@ -212,7 +214,7 @@ export function HomeScreen() {
             <div>
               <label className="block text-sm font-semibold mb-1.5">{t.labelExtras}</label>
               <div className="space-y-3">
-                {chips.map(({ group, items }) => (
+                {showSectorChips && chips.map(({ group, items }) => (
                   <div key={group}>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{group}</p>
                     <div className="flex flex-wrap gap-1.5">
