@@ -11,9 +11,13 @@ export const GRAPHIC_DESIGNER_CATEGORIES: RoleCategorySet = {
       labelEn: "Corporate Identity",
       items: ["Kartvizit", "Antetli kağıt", "Zarf", "Cepli dosya", "Yaka kartı", "Fatura şablonu"],
       itemsEn: ["Business card", "Letterhead", "Envelope", "Presentation folder", "ID badge", "Invoice template"],
+      // Doğu Avrupa değeri 5 Temmuz 2026 tarihinde düzeltildi — orijinal rakam (316/509/729)
+      // diğer kategorilerle tutarsız/anormal düşüktü, rolün kendi iç Doğu/Batı oran ortalaması
+      // (%56.6 — diğer 3 kategorinin eastern/western orta düzey oranından) baz alınarak,
+      // gerçek Batı Avrupa orta düzey değeri (1528) üzerinden yeniden hesaplandı.
       price: {
         turkey: { junior: 291, mid: 469, senior: 671 },
-        eastern: { junior: 316, mid: 509, senior: 729 },
+        eastern: { junior: 537, mid: 866, senior: 1238 },
         western: { junior: 947, mid: 1528, senior: 2185 },
       },
     },

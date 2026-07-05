@@ -85,12 +85,59 @@ export const CHIPS_EN: { group: string; items: SectorChip[] }[] = [
   { group: "Sector", items: SECTOR_CHIP_IDS.map((id, i) => ({ id, label: ["Tech","E-commerce","Health","Education","Finance","Media","Startup","Enterprise"][i] })) },
 ];
 
+// "Adobe Suite" birden fazla ayrı Adobe ürününün (Illustrator, Photoshop, ...) yerini
+// alan birleşik araç seçeneği — İllüstrasyon (grup içi) ve graphic-designer/brand-designer
+// (düz liste, bkz. TOOLS_BY_ROLE_ID + HomeScreen.tsx) arasında paylaşılan tek tooltip metni.
+export const ADOBE_SUITE_TOOLTIP = {
+  tr: "Photoshop, Illustrator, InDesign ve diğer Adobe uygulamaları",
+  en: "Photoshop, Illustrator, InDesign and other Adobe applications",
+};
+
+// İllüstrasyon rolüne özel: Araçlar grubu düz liste değil, önce Geleneksel/Dijital
+// üst seçimi yapılıyor, sonra o gruba ait araçlar checkbox olarak açılıyor
+// (bkz. HomeScreen.tsx). id: stabil, dilden bağımsız — selectedChips bununla saklanır.
+export interface IllustrationTool { id: string; label: string; labelEn: string; tooltip?: string; tooltipEn?: string }
+export interface IllustrationToolGroup { id: "digital" | "traditional"; label: string; labelEn: string; tools: IllustrationTool[] }
+
+export const ILLUSTRATION_TOOL_GROUPS: IllustrationToolGroup[] = [
+  {
+    id: "digital",
+    label: "Dijital",
+    labelEn: "Digital",
+    tools: [
+      { id: "adobe-suite", label: "Adobe Suite", labelEn: "Adobe Suite", tooltip: ADOBE_SUITE_TOOLTIP.tr, tooltipEn: ADOBE_SUITE_TOOLTIP.en },
+      { id: "clip-studio-paint", label: "Clip Studio Paint", labelEn: "Clip Studio Paint" },
+      { id: "procreate", label: "Procreate", labelEn: "Procreate" },
+      { id: "krita", label: "Krita", labelEn: "Krita" },
+      { id: "inkscape", label: "Inkscape", labelEn: "Inkscape" },
+      { id: "autodesk-sketchbook", label: "Autodesk Sketchbook", labelEn: "Autodesk Sketchbook" },
+    ],
+  },
+  {
+    id: "traditional",
+    label: "Geleneksel",
+    labelEn: "Traditional",
+    tools: [
+      { id: "graphite-pencil", label: "Karakalem", labelEn: "Graphite Pencil" },
+      { id: "ink-pen", label: "Mürekkepli kalem", labelEn: "Ink pen" },
+      { id: "colored-marker", label: "Renkli marker", labelEn: "Colored marker" },
+      { id: "watercolor", label: "Suluboya", labelEn: "Watercolor" },
+      { id: "gouache", label: "Guaj", labelEn: "Gouache" },
+      { id: "acrylic", label: "Akrilik", labelEn: "Acrylic" },
+      { id: "oil-paint", label: "Yağlı boya", labelEn: "Oil paint" },
+    ],
+  },
+];
+
 // roleId -> araç listesi (TR/EN'de aynı, sadece çevre metin dile göre değişir).
+// "illustration" burada da yer alıyor (düz liste, gruplar için bkz. ILLUSTRATION_TOOL_GROUPS)
+// çünkü toolsSelected/ALL_TOOLS mantığı hâlâ bu flat listeyi okuyor — "en az bir araç seçildi mi"
+// kontrolü grup ayrımından bağımsız.
 export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
-  "graphic-designer": ["Figma", "Adobe Illustrator", "Adobe Photoshop", "Canva"],
-  "brand-designer": ["Adobe Illustrator", "Adobe Photoshop", "Figma", "Canva"],
+  "graphic-designer": ["Figma", "Adobe Suite", "Canva"],
+  "brand-designer": ["Adobe Suite", "Figma", "Canva"],
   "ui-ux-product-designer": ["Figma", "Adobe XD", "Sketch", "Miro"],
-  "illustration": ["Procreate", "Adobe Illustrator", "Photoshop", "Clip Studio Paint"],
+  "illustration": ILLUSTRATION_TOOL_GROUPS.flatMap((g) => g.tools.map((t) => t.id)),
   "concept-art": ["Photoshop", "Procreate", "Clip Studio Paint", "Adobe Illustrator"],
   "animator": ["After Effects", "Toon Boom", "Blender", "Clip Studio Paint"],
   "motion-vfx": ["After Effects", "Cinema 4D", "Blender"],

@@ -310,3 +310,54 @@ React + TypeScript + Vite koduna dönüştürülmüş halde teslim alındı. Dev
   `pricing.ts`'in kendi tanımı). `data/roles.ts`, `TOOLS_BY_ROLE_ID`, `HomeScreen.tsx`'in
   checkbox akışı, `public/seffaflik-raporu.pdf`'e dokunulmadı.
 - `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — İllüstrasyon paket verisi eklendi (4. rol)
+
+- Önce `graphicDesigner.ts`/`brandDesigner.ts`/`uiUxDesigner.ts` karşılaştırmalı analiz edildi:
+  her ikisi de 3-4 kategori × 9 veri noktası, Junior/Orta ~0.62 ve Uzman/Orta ~1.43 çarpanı
+  istisnasız, Türkiye<Doğu Avrupa<Batı Avrupa sıralaması istisnasız — bu, yeni rol eklerken
+  referans alınan "minimum veri kalite standardı" oldu.
+- Yeni `data/packages/illustrator.ts`: `roleId: "illustration"` (ROLE_IDS index 3 ile teyit
+  edildi, tahmin edilmedi). 3 kategori — Çocuk Kitabı İllüstrasyonu, Çizgi Roman/Panel
+  İllüstrasyonu, Dijital Ressam — her biri 3 bölge × 3 deneyim = 9 veri noktası, toplam 27.
+  Veri doğrudan EUR verildi.
+- Dosyanın üst yorumunda GÜVEN NOTU var: Türkiye rakamları için somut kaynak bulunamadı,
+  genel grafik tasarım oranlarından tahmin edildi (düşük güven); Doğu/Batı Avrupa rakamları
+  uluslararası kaynaklardan (voxillustration.com, Fiverr/Truelancer) geldi (daha güvenilir).
+- `data/packages/index.ts` registry'sine `"illustration": ILLUSTRATOR_CATEGORIES` eklendi.
+- 27 veri noktasının hepsi elle kontrol edildi: her kategoride junior<orta<uzman VE
+  Türkiye<Doğu Avrupa<Batı Avrupa sıralaması tutarlı, çarpanlar (~0.62/~1.43) diğer rollerle
+  aynı aralıkta, anomali yok.
+- `graphicDesigner.ts`, `brandDesigner.ts`, `uiUxDesigner.ts`, `roles.ts`, HomeScreen/
+  ResultsScreen/PDF koduna dokunulmadı.
+- `npm run build` hatasız geçti. Tarayıcı testi kullanıcıya bırakıldı.
+
+---
+
+## 5 Temmuz 2026 — İllüstrasyon: kategori adı değişikliği + Geleneksel/Dijital araç ayrımı
+
+- `data/packages/illustrator.ts`: "Dijital Ressam" kategorisi "Özel Sipariş"/"Custom Commission"
+  oldu (label/labelEn), fiyat ve items listesi değişmedi.
+- `data/roles.ts`: yeni `ILLUSTRATION_TOOL_GROUPS` (id: "digital"/"traditional", her biri
+  label/labelEn + tools listesi, tools stabil id + label/labelEn + opsiyonel tooltip/tooltipEn).
+  Dijital: Adobe Suite (tooltip'li), Clip Studio Paint, Procreate, Krita, Inkscape, Autodesk
+  Sketchbook. Geleneksel: Mürekkepli kalem/Ink pen, Renkli marker/Colored marker, Suluboya/
+  Watercolor, Guaj/Gouache, Akrilik/Acrylic, Yağlı boya/Oil paint. `TOOLS_BY_ROLE_ID["illustration"]`
+  artık bu grupların düz (flat) id listesinden türetiliyor — eski `["Procreate","Adobe
+  Illustrator","Photoshop","Clip Studio Paint"]` listesi kaldırıldı, `toolsSelected`/`ALL_TOOLS`
+  mantığı grup ayrımından habersiz, sadece "en az bir araç id'si seçili mi" kontrolü yapmaya
+  devam ediyor.
+- `pages/HomeScreen.tsx`: yeni `toolGroupId` state (`"digital" | "traditional" | null`), rol
+  değişince (İllüstrasyon'dan çıkılınca) sıfırlanıyor. Araçlar grubu artık `roleId ===
+  "illustration"` ise: önce Geleneksel/Dijital toggle butonları, seçilince altında o gruba ait
+  checkbox'lar. Diğer 10 rolde eski düz liste davranışı DEĞİŞMEDİ (ayrı kod dalı, `isIllustration
+  ? ... : tools.length > 0 && ...`).
+  - Adobe Suite chip'i `components/ui/tooltip.tsx` (mevcut shadcn Radix tooltip) ile sarıldı,
+    hover'da "Photoshop, Illustrator, InDesign ve diğer Adobe uygulamaları" gösteriyor. Diğer
+    araçlara tooltip eklenmedi (kullanıcı isteği).
+- Sektör grubu, kategori checkbox mantığı, fiyat hesaplama, diğer rollerin Araçlar görünümü
+  değişmedi.
+- `npm run build` hatasız geçti. Tarayıcı testi (masaüstü + mobil) kullanıcıya bırakıldı — not:
+  Radix Tooltip hover-tabanlı, mobilde dokunmatik davranışı kullanıcı test edecek.

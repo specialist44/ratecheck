@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import type { Currency, Experience } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
-import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID } from "../data/roles";
+import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, ILLUSTRATION_TOOL_GROUPS, ADOBE_SUITE_TOOLTIP } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
@@ -13,6 +13,9 @@ import { RESULTS_PATH, CATALOG_PATH } from "../routes";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../components/ui/tooltip";
+
+const ILLUSTRATION_ROLE_ID = "illustration";
 
 const EMPTY_TOOLS: string[] = [];
 const ALL_TOOLS = new Set(Object.values(TOOLS_BY_ROLE_ID).flat());
@@ -48,9 +51,11 @@ export function HomeScreen() {
   const [selectedChips, setSelectedChips] = useState<string[]>(saved.selectedChips ?? []);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [toolGroupId, setToolGroupId] = useState<"digital" | "traditional" | null>(null);
 
   const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
+  const isIllustration = roleId === ILLUSTRATION_ROLE_ID;
 
   useEffect(() => {
     saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds });
@@ -59,6 +64,10 @@ export function HomeScreen() {
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
   }, [roleId]);
+
+  useEffect(() => {
+    if (!isIllustration) setToolGroupId(null);
+  }, [isIllustration]);
 
   useEffect(() => {
     setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
@@ -171,16 +180,59 @@ export function HomeScreen() {
                     {attemptedSubmit && !sectorSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                   </div>
                 ))}
-                {tools.length > 0 && (
+                {isIllustration ? (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {ILLUSTRATION_TOOL_GROUPS.map((group) => (
+                        <button key={group.id} onClick={() => setToolGroupId(group.id)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupId === group.id ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                          {lang === "tr" ? group.label : group.labelEn}
+                        </button>
+                      ))}
+                    </div>
+                    {toolGroupId && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {ILLUSTRATION_TOOL_GROUPS.find((g) => g.id === toolGroupId)!.tools.map((tool) => {
+                          const label = lang === "tr" ? tool.label : tool.labelEn;
+                          const tooltip = lang === "tr" ? tool.tooltip : tool.tooltipEn;
+                          const chip = (
+                            <button key={tool.id} onClick={() => toggleChip(tool.id)}
+                              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(tool.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                              {selectedChips.includes(tool.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{label}
+                            </button>
+                          );
+                          if (!tooltip) return chip;
+                          return (
+                            <Tooltip key={tool.id}>
+                              <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                              <TooltipContent>{tooltip}</TooltipContent>
+                            </Tooltip>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {attemptedSubmit && !toolsSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
+                  </div>
+                ) : tools.length > 0 && (
                   <div>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {tools.map((chip) => (
-                        <button key={chip} onClick={() => toggleChip(chip)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
-                          {selectedChips.includes(chip) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip}
-                        </button>
-                      ))}
+                      {tools.map((chip) => {
+                        const button = (
+                          <button key={chip} onClick={() => toggleChip(chip)}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                            {selectedChips.includes(chip) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip}
+                          </button>
+                        );
+                        if (chip !== "Adobe Suite") return button;
+                        return (
+                          <Tooltip key={chip}>
+                            <TooltipTrigger asChild>{button}</TooltipTrigger>
+                            <TooltipContent>{lang === "tr" ? ADOBE_SUITE_TOOLTIP.tr : ADOBE_SUITE_TOOLTIP.en}</TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
                     </div>
                     {attemptedSubmit && !toolsSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
                   </div>
