@@ -9,6 +9,7 @@ import { MOTION_VFX_ARTIST_CATEGORIES } from "./motionVfxArtist";
 import { WEB_DEVELOPER_CATEGORIES } from "./webDeveloper";
 import { MOBILE_APP_DEVELOPER_CATEGORIES } from "./mobileAppDeveloper";
 import { WRITER_CONTENT_CREATOR_CATEGORIES } from "./writerContentCreator";
+import { DIGITAL_MARKETING_CATEGORIES } from "./digitalMarketing";
 
 // Diğer roller eklendikçe burada birer satır olarak kaydedilecek.
 const REGISTRY: Record<string, RoleCategorySet> = {
@@ -22,6 +23,7 @@ const REGISTRY: Record<string, RoleCategorySet> = {
   "web-developer": WEB_DEVELOPER_CATEGORIES,
   "mobile-app-developer": MOBILE_APP_DEVELOPER_CATEGORIES,
   "writing-content": WRITER_CONTENT_CREATOR_CATEGORIES,
+  "digital-marketing": DIGITAL_MARKETING_CATEGORIES,
 };
 
 export function getRoleCategories(roleId: string): RoleCategoryDef[] {

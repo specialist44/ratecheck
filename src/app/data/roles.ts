@@ -151,6 +151,6 @@ export const TOOLS_BY_ROLE_ID: Record<string, string[]> = {
   "web-developer": ["Figma", "React", "WordPress", "Shopify", "Webflow", "Node.js", "PostgreSQL/MongoDB"],
   "mobile-app-developer": ["Figma", "Swift/Xcode", "Kotlin/Android Studio", "Flutter", "React Native", "Firebase"],
   "writing-content": ["Google Docs", "Notion", "Grammarly", "SurferSEO/Ahrefs", "Canva"],
-  "digital-marketing": ["Google Ads", "Meta Ads Manager", "Google Analytics", "Mailchimp"],
+  "digital-marketing": ["Meta Business Suite", "Hootsuite/Buffer", "Canva", "Ahrefs/SEMrush", "Google Analytics/Search Console"],
   "production-media": ["Premiere Pro", "DaVinci Resolve", "Lightroom", "Final Cut Pro"],
 };
