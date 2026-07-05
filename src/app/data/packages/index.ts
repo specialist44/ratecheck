@@ -6,6 +6,7 @@ import { ILLUSTRATOR_CATEGORIES } from "./illustrator";
 import { CONCEPT_ARTIST_CATEGORIES } from "./conceptArtist";
 import { ANIMATOR_CATEGORIES } from "./animator";
 import { MOTION_VFX_ARTIST_CATEGORIES } from "./motionVfxArtist";
+import { WEB_DEVELOPER_CATEGORIES } from "./webDeveloper";
 
 // Diğer roller eklendikçe burada birer satır olarak kaydedilecek.
 const REGISTRY: Record<string, RoleCategorySet> = {
@@ -16,6 +17,7 @@ const REGISTRY: Record<string, RoleCategorySet> = {
   "concept-art": CONCEPT_ARTIST_CATEGORIES,
   "animator": ANIMATOR_CATEGORIES,
   "motion-vfx": MOTION_VFX_ARTIST_CATEGORIES,
+  "web-developer": WEB_DEVELOPER_CATEGORIES,
 };
 
 export function getRoleCategories(roleId: string): RoleCategoryDef[] {
