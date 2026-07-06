@@ -6,7 +6,7 @@ export function BackButton() {
   const t = useLang();
   const navigate = useNavigate();
   return (
-    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-11 -mt-3 mb-3">
       <ArrowRight size={14} className="rotate-180" />{t.back}
     </button>
   );

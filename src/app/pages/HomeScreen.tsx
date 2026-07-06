@@ -177,8 +177,8 @@ export function HomeScreen() {
               <label className="block text-sm font-semibold mb-1.5">{t.labelExp}</label>
               <div className="grid grid-cols-3 gap-2">
                 {([["junior", t.expJunior, t.expJuniorSub], ["mid", t.expMid, t.expMidSub], ["senior", t.expSenior, t.expSeniorSub]] as [Experience, string, string][]).map(([key, label, sub]) => (
-                  <button key={key} onClick={() => setExperience(key)}
-                    className={`py-2.5 px-2 rounded-xl border text-left transition-all ${experience === key ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
+                  <button key={key} onClick={() => setExperience(key)} aria-pressed={experience === key}
+                    className={`relative after:absolute after:content-[''] after:-inset-[9px] py-2.5 px-2 rounded-xl border text-left transition-all ${experience === key ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
                     <span className="block text-xs font-semibold">{label}</span>
                     <span className={`block text-[10px] mt-0.5 ${experience === key ? "text-background/60" : "text-muted-foreground"}`}>{sub}</span>
                   </button>
@@ -232,7 +232,7 @@ export function HomeScreen() {
                                 return (
                                   <button key={variant.id} type="button" onClick={() => selectVariant(cat.id, variant.id)}
                                     aria-pressed={variantChecked}
-                                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${variantChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                    className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${variantChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                                     {variantChecked && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? variant.label : variant.labelEn}
                                   </button>
                                 );
@@ -250,7 +250,7 @@ export function HomeScreen() {
                                 return (
                                   <button key={subItem.id} type="button" onClick={() => toggleSubItem(cat.id, subItem.id)}
                                     aria-pressed={subItemChecked}
-                                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${subItemChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                    className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${subItemChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                                     {subItemChecked && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? subItem.label : subItem.labelEn}
                                   </button>
                                 );
@@ -276,8 +276,8 @@ export function HomeScreen() {
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{group}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {items.map((chip) => (
-                        <button key={chip.id} onClick={() => toggleChip(chip.id)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                        <button key={chip.id} onClick={() => toggleChip(chip.id)} aria-pressed={selectedChips.includes(chip.id)}
+                          className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                           {selectedChips.includes(chip.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip.label}
                         </button>
                       ))}
@@ -290,8 +290,8 @@ export function HomeScreen() {
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {TRADITIONAL_DIGITAL_TOOL_GROUPS.map((group) => (
-                        <button key={group.id} onClick={() => toggleToolGroup(group.id)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupIds.includes(group.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                        <button key={group.id} onClick={() => toggleToolGroup(group.id)} aria-pressed={toolGroupIds.includes(group.id)}
+                          className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupIds.includes(group.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                           {toolGroupIds.includes(group.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? group.label : group.labelEn}
                         </button>
                       ))}
@@ -304,8 +304,8 @@ export function HomeScreen() {
                               const label = lang === "tr" ? tool.label : tool.labelEn;
                               const tooltip = lang === "tr" ? tool.tooltip : tool.tooltipEn;
                               const chip = (
-                                <button key={tool.id} onClick={() => toggleChip(tool.id)}
-                                  className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(tool.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                <button key={tool.id} onClick={() => toggleChip(tool.id)} aria-pressed={selectedChips.includes(tool.id)}
+                                  className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(tool.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                                   {selectedChips.includes(tool.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{label}
                                 </button>
                               );
@@ -329,8 +329,8 @@ export function HomeScreen() {
                     <div className="flex flex-wrap gap-1.5">
                       {tools.map((chip) => {
                         const button = (
-                          <button key={chip} onClick={() => toggleChip(chip)}
-                            className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                          <button key={chip} onClick={() => toggleChip(chip)} aria-pressed={selectedChips.includes(chip)}
+                            className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(chip) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                             {selectedChips.includes(chip) && <Check size={10} className="inline mr-1 -mt-0.5" />}{chip}
                           </button>
                         );
@@ -364,8 +364,8 @@ export function HomeScreen() {
                 <p className="text-xs text-muted-foreground mb-1.5 invisible" aria-hidden="true">{t.labelCountrySub}</p>
                 <div className="flex gap-1.5">
                   {(["TRY","EUR","GBP"] as Currency[]).map((c) => (
-                    <button key={c} onClick={() => setCurrency(c)}
-                      className={`flex-1 py-2.5 text-xs rounded-xl border font-medium transition-all ${currency === c ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
+                    <button key={c} onClick={() => setCurrency(c)} aria-pressed={currency === c}
+                      className={`relative after:absolute after:content-[''] after:-inset-[9px] flex-1 py-2.5 text-xs rounded-xl border font-medium transition-all ${currency === c ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/30"}`}>
                       {CUR_SYMBOL[c]} {c}
                     </button>
                   ))}

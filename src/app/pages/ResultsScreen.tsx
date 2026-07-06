@@ -171,8 +171,8 @@ export function ResultsScreen() {
           <div className="flex justify-end mb-4">
             <div className="flex gap-1.5">
               {(["TRY", "EUR", "GBP"] as Currency[]).map((c) => (
-                <button key={c} onClick={() => setCurrency(c)}
-                  className={`px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all ${currency === c ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/30"}`}>
+                <button key={c} onClick={() => setCurrency(c)} aria-pressed={currency === c}
+                  className={`relative after:absolute after:content-[''] after:-inset-[9px] px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all ${currency === c ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/30"}`}>
                   {CUR_SYMBOL[c]} {c}
                 </button>
               ))}

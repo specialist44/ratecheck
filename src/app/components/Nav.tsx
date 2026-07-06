@@ -23,13 +23,14 @@ export function Nav() {
     </button>
   );
 
-  const LangToggle = ({ mobile }: { mobile?: boolean }) => (
-    <div className={`flex gap-1 ${mobile ? "" : ""}`}>
+  const LangToggle = () => (
+    <div className="flex gap-1">
       {(["tr", "en"] as Lang[]).map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}
-          className={`text-xs px-2.5 py-1 rounded-lg border font-semibold uppercase transition-all ${
+          aria-pressed={lang === l}
+          className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-2.5 py-1 rounded-lg border font-semibold uppercase transition-all ${
             lang === l ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/40"
           }`}
         >
@@ -55,23 +56,25 @@ export function Nav() {
           <LangToggle />
           <button
             onClick={toggleDark}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+            className="relative after:absolute after:content-[''] after:-inset-[9px] w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
             aria-label="Toggle dark mode"
+            aria-pressed={dark}
           >
             {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </div>
         <div className="flex md:hidden items-center gap-2 shrink-0">
-          <LangToggle mobile />
+          <LangToggle />
           <button
             onClick={toggleDark}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+            className="relative after:absolute after:content-[''] after:-inset-[9px] w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
             aria-label="Toggle dark mode"
+            aria-pressed={dark}
           >
             {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </div>
-        <button className="md:hidden p-1" onClick={() => setOpen(!open)}>
+        <button className="md:hidden p-1 min-h-11 min-w-11 flex items-center justify-center" onClick={() => setOpen(!open)} aria-label="Toggle menu" aria-pressed={open}>
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>

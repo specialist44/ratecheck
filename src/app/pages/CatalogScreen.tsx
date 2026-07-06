@@ -66,8 +66,8 @@ export function CatalogScreen() {
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{t.catalogCurrency}</p>
                 <div className="flex gap-1.5">
                   {(["EUR","TRY","GBP"] as Currency[]).map((c) => (
-                    <button key={c} onClick={() => setCurrency(c)}
-                      className={`px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all ${currency===c?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>{CUR_SYMBOL[c]} {c}</button>
+                    <button key={c} onClick={() => setCurrency(c)} aria-pressed={currency===c}
+                      className={`relative after:absolute after:content-[''] after:-inset-[9px] px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all ${currency===c?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>{CUR_SYMBOL[c]} {c}</button>
                   ))}
                 </div>
               </div>
@@ -108,8 +108,8 @@ export function CatalogScreen() {
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 md:mb-1.5">{t.catalogRegion}</p>
               <div className="flex flex-wrap gap-2 md:gap-1.5">
                 {([["all", t.regionAll], ["turkey", t.regionTurkey], ["eastern", t.regionEastern], ["western", t.regionWestern]] as [Region|"all", string][]).map(([key, label]) => (
-                  <button key={key} onClick={() => setRegion(key)}
-                    className={`text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-lg border font-medium transition-all ${region===key?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>
+                  <button key={key} onClick={() => setRegion(key)} aria-pressed={region===key}
+                    className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-lg border font-medium transition-all ${region===key?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>
                     {label}
                   </button>
                 ))}
@@ -119,8 +119,8 @@ export function CatalogScreen() {
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">{t.catalogCurrency}</p>
               <div className="flex gap-1.5">
                 {(["EUR","TRY","GBP"] as Currency[]).map((c) => (
-                  <button key={c} onClick={() => setCurrency(c)}
-                    className={`px-3.5 py-2 text-xs rounded-lg border font-semibold transition-all ${currency===c?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>{CUR_SYMBOL[c]} {c}</button>
+                  <button key={c} onClick={() => setCurrency(c)} aria-pressed={currency===c}
+                    className={`relative after:absolute after:content-[''] after:-inset-[9px] px-3.5 py-2 text-xs rounded-lg border font-semibold transition-all ${currency===c?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>{CUR_SYMBOL[c]} {c}</button>
                 ))}
               </div>
             </div>
@@ -128,8 +128,8 @@ export function CatalogScreen() {
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 md:mb-1.5">{t.catalogExperience}</p>
               <div className="flex flex-wrap gap-2 md:gap-1.5">
                 {([["junior",t.expJunior],["mid",t.expMid],["senior",t.expSenior]] as [Experience,string][]).map(([key,label]) => (
-                  <button key={key} onClick={() => setExperience(key)}
-                    className={`text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-lg border font-medium transition-all ${experience===key?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>
+                  <button key={key} onClick={() => setExperience(key)} aria-pressed={experience===key}
+                    className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-lg border font-medium transition-all ${experience===key?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>
                     {label}
                   </button>
                 ))}
@@ -141,7 +141,7 @@ export function CatalogScreen() {
           <div className="flex gap-2.5 flex-wrap mb-10 md:gap-2 md:mb-8">
             {categories.map((cat) => (
               <button key={cat} onClick={() => setActiveCategory(cat)}
-                className={`text-xs px-4 py-2 md:px-3.5 md:py-1.5 rounded-full border font-medium transition-all ${activeCategory===cat?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/40"}`}>
+                className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-4 py-2 md:px-3.5 md:py-1.5 rounded-full border font-medium transition-all ${activeCategory===cat?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/40"}`}>
                 {cat === "all" ? t.catalogAll : cat}
               </button>
             ))}
