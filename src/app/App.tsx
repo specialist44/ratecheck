@@ -17,10 +17,19 @@ const DARK_STORAGE_KEY = "ratecheck-dark";
 // ─── App Root ─────────────────────────────────────────────────────────────────
 
 function readStoredLang(): Lang {
-  return localStorage.getItem(LANG_STORAGE_KEY) === "en" ? "en" : "tr";
+  try {
+    return localStorage.getItem(LANG_STORAGE_KEY) === "en" ? "en" : "tr";
+  } catch {
+    // localStorage unavailable (private mode, disabled, etc.) — silently fall back
+    return "tr";
+  }
 }
 function readStoredDark(): boolean {
-  return localStorage.getItem(DARK_STORAGE_KEY) === "1";
+  try {
+    return localStorage.getItem(DARK_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 function AppShell() {

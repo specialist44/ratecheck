@@ -70,7 +70,16 @@ export function HomeScreen() {
   }, [hasToolGroups]);
 
   const toggleToolGroup = (id: "digital" | "traditional") =>
-    setToolGroupIds((p) => p.includes(id) ? p.filter((g) => g !== id) : [...p, id]);
+    setToolGroupIds((p) => {
+      if (p.includes(id)) {
+        // Grup kapanınca içindeki araç seçimleri de temizlensin — kapalı bir
+        // grubun "hayalet" seçili aracı kalmasın (bkz. audit raporu).
+        const groupToolIds = TRADITIONAL_DIGITAL_TOOL_GROUPS.find((g) => g.id === id)?.tools.map((t) => t.id) ?? [];
+        setSelectedChips((chips) => chips.filter((c) => !groupToolIds.includes(c)));
+        return p.filter((g) => g !== id);
+      }
+      return [...p, id];
+    });
 
   useEffect(() => {
     setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
