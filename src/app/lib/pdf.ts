@@ -171,13 +171,16 @@ export async function downloadResultsPdf(params: {
   symbol: string;
   categories: { label: string; price: number }[]; // indirim öncesi fiyatlarla, pahalıdan ucuza sıralı
   discount: number; // indirim tutarı, indirim yoksa 0
-  total: number;
+  billedRevisionCount: number; // gerçekten faturalanan revizyon sayısı (firstTwoFree açıkken ilk 2 zaten düşülmüş)
+  firstTwoFree: boolean; // "İlk 2 revizyon ücretsiz" toggle durumu, sadece etiket metni için
+  revisionFee: number; // ek revizyon ücreti, yoksa 0
+  total: number; // grandTotal — indirim ve revizyon ücreti dahil, ekranda gösterilen nihai rakam
   totalSub: string;
   regions: { key: Region; name: string; rate: string; dim: boolean }[];
   locale: string;
   logo: PdfLogo | null;
 }) {
-  const { lang, role, expLabel, regionLabel, symbol, categories, discount, total, totalSub, regions, locale, logo } = params;
+  const { lang, role, expLabel, regionLabel, symbol, categories, discount, billedRevisionCount, firstTwoFree, revisionFee, total, totalSub, regions, locale, logo } = params;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   await ensurePdfFontsLoaded(doc);
   const brandLogo = await ensureBrandLogoLoaded();
@@ -294,6 +297,20 @@ export async function downloadResultsPdf(params: {
       doc.setFont("Inter", "bold");
       doc.setTextColor(20);
       doc.text(`-${symbol}${Math.round(discount).toLocaleString(locale)}`, pageWidth - marginX, y, { align: "right" });
+    }
+
+    if (revisionFee > 0) {
+      y += 9;
+      doc.setFont("Inter", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(130);
+      const revLabelTr = firstTwoFree ? `EK REVİZYON ÜCRETİ (${billedRevisionCount} × %12)` : `REVİZYON ÜCRETİ (TOPLAM ${billedRevisionCount} × %12)`;
+      const revLabelEn = firstTwoFree ? `ADDITIONAL REVISION FEE (${billedRevisionCount} × 12%)` : `REVISION FEE (TOTAL ${billedRevisionCount} × 12%)`;
+      const revLabel = lang === "tr" ? revLabelTr : revLabelEn;
+      doc.text(revLabel, marginX, y);
+      doc.setFont("Inter", "bold");
+      doc.setTextColor(20);
+      doc.text(`+${symbol}${Math.round(revisionFee).toLocaleString(locale)}`, pageWidth - marginX, y, { align: "right" });
     }
 
     y += 9;

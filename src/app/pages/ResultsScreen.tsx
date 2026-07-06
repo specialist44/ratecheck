@@ -1,13 +1,14 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { Download, Info, ChevronDown } from "lucide-react";
+import { Download, Info, ChevronDown, Plus, Minus } from "lucide-react";
 import type { Currency, Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CUR_SYMBOL } from "../lib/pricing";
 import { getRoleLabel } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { resolveCategoryPrice, resolveSubItemsPrice, calculatePackageQuote } from "../lib/packagePricing";
+import { calculateRevisionFee, FREE_REVISIONS } from "../lib/revisionPricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
 import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
@@ -26,6 +27,8 @@ export function ResultsScreen() {
   const [searchParams] = useSearchParams();
   const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
+  const [revisionCount, setRevisionCount] = useState(0);
+  const [firstTwoFree, setFirstTwoFree] = useState(true);
   const [logo, setLogo] = useState<PdfLogo | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -138,15 +141,19 @@ export function ResultsScreen() {
     return base;
   };
   const hasDiscount = quote.items.length > 1;
+  const revisionFee = calculateRevisionFee(quote.total, revisionCount, firstTwoFree);
+  const grandTotal = quote.total + revisionFee;
+  const billedRevisionCount = firstTwoFree ? Math.max(0, revisionCount - FREE_REVISIONS) : revisionCount;
 
   const regions = REGION_KEYS.map((r) => {
     const rq = calculatePackageQuote(
       selectedCategories.map((cat) => ({ categoryId: cat.id, price: resolvePrice(cat, r) })),
     );
+    const rTotal = rq.total + calculateRevisionFee(rq.total, revisionCount, firstTwoFree);
     return {
       key: r,
       name: regionLabelFor(r),
-      rate: `${symbol}${Math.round(rq.total).toLocaleString(locale)}`,
+      rate: `${symbol}${Math.round(rTotal).toLocaleString(locale)}`,
       dim: r !== region,
     };
   });
@@ -199,6 +206,34 @@ export function ResultsScreen() {
             ))}
           </div>
 
+          <div className="mb-5 p-4 border border-border rounded-xl space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium">{t.resultFirstTwoFreeToggle}</p>
+              <button type="button" onClick={() => setFirstTwoFree((v) => !v)} aria-pressed={firstTwoFree}
+                aria-label={t.resultFirstTwoFreeToggle}
+                className={`relative after:absolute after:content-[''] after:-inset-[10px] inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${firstTwoFree ? "bg-foreground" : "bg-border"}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${firstTwoFree ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+              <div>
+                <p className="text-sm font-semibold">{firstTwoFree ? t.resultRevisionsLabel : t.resultRevisionsLabelTotal}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{firstTwoFree ? t.resultRevisionsNote : t.resultRevisionsNoteAllPaid}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button type="button" onClick={() => setRevisionCount((n) => Math.max(0, n - 1))} disabled={revisionCount === 0}
+                  aria-label="-" className="min-h-11 min-w-11 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Minus size={14} />
+                </button>
+                <span className="w-6 text-center text-sm font-semibold tabular-nums">{revisionCount}</span>
+                <button type="button" onClick={() => setRevisionCount((n) => n + 1)}
+                  aria-label="+" className="min-h-11 min-w-11 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors">
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="p-7 bg-foreground text-background rounded-2xl mb-5">
             {hasDiscount && (
               <div className="flex items-center justify-between text-sm text-background/60 mb-4 pb-4 border-b border-white/15">
@@ -206,8 +241,14 @@ export function ResultsScreen() {
                 <span>-{symbol}{Math.round(quote.subtotal - quote.total).toLocaleString(locale)}</span>
               </div>
             )}
+            {revisionFee > 0 && (
+              <div className="flex items-center justify-between text-sm text-background/60 mb-4 pb-4 border-b border-white/15">
+                <span>{t.resultRevisionsFeeLabel} ({billedRevisionCount} × %12)</span>
+                <span>+{symbol}{Math.round(revisionFee).toLocaleString(locale)}</span>
+              </div>
+            )}
             <p className="text-[10px] uppercase tracking-widest text-background/50 mb-2">{t.resultTotalLabel}</p>
-            <p className="text-4xl font-bold tracking-tight mb-1">{symbol}{Math.round(quote.total).toLocaleString(locale)}</p>
+            <p className="text-4xl font-bold tracking-tight mb-1">{symbol}{Math.round(grandTotal).toLocaleString(locale)}</p>
             <p className="text-sm text-background/50">{totalSub}</p>
           </div>
 
@@ -245,7 +286,10 @@ export function ResultsScreen() {
                     lang, role: roleLabel, expLabel, regionLabel, symbol, locale, logo,
                     categories: quote.items.map((item) => ({ label: categoryLabel(item.categoryId), price: item.fullPrice })),
                     discount: hasDiscount ? quote.subtotal - quote.total : 0,
-                    total: quote.total,
+                    billedRevisionCount,
+                    firstTwoFree,
+                    revisionFee,
+                    total: grandTotal,
                     totalSub,
                     regions,
                   });
