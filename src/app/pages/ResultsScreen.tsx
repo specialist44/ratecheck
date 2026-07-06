@@ -45,7 +45,7 @@ export function ResultsScreen() {
       setLogo(await rasterizeLogoFile(file));
       setLogoError(null);
     } catch {
-      setLogoError(lang === "tr" ? "Görsel yüklenemedi, başka bir dosya dene." : "Couldn't load that image — try another file.");
+      setLogoError(lang === "tr" ? "Görsel yüklenemedi, başka bir dosya dene." : "Couldn't load that image. Try another file.");
     }
   };
 
