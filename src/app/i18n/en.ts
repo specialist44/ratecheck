@@ -35,6 +35,7 @@ export const EN: typeof TR = {
   countryFransa: "France",
   labelCurrency: "Currency",
   ctaCalculate: "Show rate suggestion",
+  resetSelections: "Reset selections",
   smallJobNudge: "One-off jobs like posters, videos or banners?",
   smallJobNudgeSub: "Browse the fixed-price catalog here",
   resultsLabel: "UI/UX Designer · Mid-level",

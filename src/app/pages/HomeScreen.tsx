@@ -8,7 +8,7 @@ import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
-import { loadHomeFormState, saveHomeFormState } from "../lib/homeFormState";
+import { loadHomeFormState, saveHomeFormState, clearHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
@@ -132,6 +132,24 @@ export function HomeScreen() {
   const categorySelected = packageCategories.length === 0 || (selectedCategoryIds.length > 0 && variantsReady);
   const canCalculate = !!roleId && categorySelected && sectorSelected && toolsSelected;
 
+  const hasAnySelection = !!roleId || experience !== "mid" || currency !== "EUR" || country !== "Türkiye"
+    || selectedChips.length > 0 || selectedCategoryIds.length > 0 || toolGroupIds.length > 0
+    || Object.keys(selectedVariantIds).length > 0 || Object.keys(selectedSubItemIds).length > 0;
+
+  const resetAll = () => {
+    setRoleId("");
+    setExperience("mid");
+    setCurrency("EUR");
+    setCountry("Türkiye");
+    setSelectedChips([]);
+    setSelectedCategoryIds([]);
+    setSelectedVariantIds({});
+    setSelectedSubItemIds({});
+    setToolGroupIds([]);
+    setAttemptedSubmit(false);
+    clearHomeFormState();
+  };
+
   const toggleCategory = (id: string) =>
     setSelectedCategoryIds((p) => {
       if (p.includes(id)) {
@@ -162,6 +180,15 @@ export function HomeScreen() {
           </div>
 
           <div className="space-y-5">
+            {hasAnySelection && (
+              <div className="flex justify-end">
+                <button type="button" onClick={resetAll}
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 decoration-1 transition-colors min-h-11 px-2 -my-2 flex items-center">
+                  {t.resetSelections}
+                </button>
+              </div>
+            )}
+
             {/* Role */}
             <div>
               <label className="block text-sm font-semibold mb-1.5">{t.labelRole}</label>

@@ -35,6 +35,7 @@ export const TR = {
   countryFransa: "Fransa",
   labelCurrency: "Para birimi",
   ctaCalculate: "Ücret önerisini göster",
+  resetSelections: "Seçimleri sıfırla",
   smallJobNudge: "Poster, video, banner gibi küçük işler mi?",
   smallJobNudgeSub: "Sabit fiyat kataloğuna buradan bakabilirsiniz",
   // Results
