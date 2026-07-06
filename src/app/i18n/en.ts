@@ -23,7 +23,7 @@ export const EN: typeof TR = {
   categoryVariantLabel: "Which medium?",
   categorySubItemLabel: "Which items are included? (select multiple)",
   labelDuration: "Project Duration",
-  durationSub: "Length of the animation clip — price scales with it",
+  durationSub: "Length of the animation clip. Price scales with it.",
   durationUnit: "s",
   durationCustomToggle: "Enter your own duration",
   durationCustomPlaceholder: "Enter seconds",

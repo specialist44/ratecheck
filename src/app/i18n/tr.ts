@@ -23,7 +23,7 @@ export const TR = {
   categoryVariantLabel: "Hangi mecra için?",
   categorySubItemLabel: "Hangi kalemler dahil? (birden fazla seçebilirsin)",
   labelDuration: "Proje Süresi",
-  durationSub: "Animasyon klibinin uzunluğu — fiyat buna göre ölçeklenir",
+  durationSub: "Animasyon klibinin uzunluğu. Fiyat buna göre ölçeklenir.",
   durationUnit: "sn",
   durationCustomToggle: "Kendi süreni gir",
   durationCustomPlaceholder: "Saniye gir",
