@@ -51,7 +51,7 @@ export function HomeScreen() {
   const [selectedVariantIds, setSelectedVariantIds] = useState<Record<string, string>>(saved.selectedVariantIds ?? {});
   const [selectedSubItemIds, setSelectedSubItemIds] = useState<Record<string, string[]>>(saved.selectedSubItemIds ?? {});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
-  const [toolGroupId, setToolGroupId] = useState<"digital" | "traditional" | null>(null);
+  const [toolGroupIds, setToolGroupIds] = useState<("digital" | "traditional")[]>([]);
 
   const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
@@ -66,8 +66,11 @@ export function HomeScreen() {
   }, [roleId]);
 
   useEffect(() => {
-    if (!hasToolGroups) setToolGroupId(null);
+    if (!hasToolGroups) setToolGroupIds([]);
   }, [hasToolGroups]);
+
+  const toggleToolGroup = (id: "digital" | "traditional") =>
+    setToolGroupIds((p) => p.includes(id) ? p.filter((g) => g !== id) : [...p, id]);
 
   useEffect(() => {
     setSelectedCategoryIds((prev) => prev.filter((id) => packageCategories.some((c) => c.id === id)));
@@ -103,8 +106,9 @@ export function HomeScreen() {
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
 
-  // Konsept Sanatı'nda mecra seçimi zaten Sektör'ün yerini tutuyor, bu yüzden grup hiç gösterilmiyor.
-  const showSectorChips = roleId !== "concept-art";
+  // Konsept Sanatı'nda mecra seçimi, İllüstrasyon'da ise Geleneksel/Dijital
+  // araç seçimi zaten Sektör'ün yerini tutuyor, bu yüzden grup hiç gösterilmiyor.
+  const showSectorChips = roleId !== "concept-art" && roleId !== "illustration";
   const sectorChipIds = chips.flatMap((g) => g.items.map((i) => i.id));
   const sectorSelected = !showSectorChips || sectorChipIds.some((id) => selectedChips.includes(id));
   const toolsSelected = tools.length === 0 || tools.some((c) => selectedChips.includes(c));
@@ -277,31 +281,35 @@ export function HomeScreen() {
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{lang === "tr" ? "Araçlar" : "Tools"}</p>
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {TRADITIONAL_DIGITAL_TOOL_GROUPS.map((group) => (
-                        <button key={group.id} onClick={() => setToolGroupId(group.id)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupId === group.id ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
-                          {lang === "tr" ? group.label : group.labelEn}
+                        <button key={group.id} onClick={() => toggleToolGroup(group.id)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${toolGroupIds.includes(group.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                          {toolGroupIds.includes(group.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? group.label : group.labelEn}
                         </button>
                       ))}
                     </div>
-                    {toolGroupId && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {TRADITIONAL_DIGITAL_TOOL_GROUPS.find((g) => g.id === toolGroupId)!.tools.map((tool) => {
-                          const label = lang === "tr" ? tool.label : tool.labelEn;
-                          const tooltip = lang === "tr" ? tool.tooltip : tool.tooltipEn;
-                          const chip = (
-                            <button key={tool.id} onClick={() => toggleChip(tool.id)}
-                              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(tool.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
-                              {selectedChips.includes(tool.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{label}
-                            </button>
-                          );
-                          if (!tooltip) return chip;
-                          return (
-                            <Tooltip key={tool.id}>
-                              <TooltipTrigger asChild>{chip}</TooltipTrigger>
-                              <TooltipContent>{tooltip}</TooltipContent>
-                            </Tooltip>
-                          );
-                        })}
+                    {toolGroupIds.length > 0 && (
+                      <div className="space-y-2">
+                        {TRADITIONAL_DIGITAL_TOOL_GROUPS.filter((g) => toolGroupIds.includes(g.id)).map((group) => (
+                          <div key={group.id} className="flex flex-wrap gap-1.5">
+                            {group.tools.map((tool) => {
+                              const label = lang === "tr" ? tool.label : tool.labelEn;
+                              const tooltip = lang === "tr" ? tool.tooltip : tool.tooltipEn;
+                              const chip = (
+                                <button key={tool.id} onClick={() => toggleChip(tool.id)}
+                                  className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedChips.includes(tool.id) ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                                  {selectedChips.includes(tool.id) && <Check size={10} className="inline mr-1 -mt-0.5" />}{label}
+                                </button>
+                              );
+                              if (!tooltip) return chip;
+                              return (
+                                <Tooltip key={tool.id}>
+                                  <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                                  <TooltipContent>{tooltip}</TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        ))}
                       </div>
                     )}
                     {attemptedSubmit && !toolsSelected && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
