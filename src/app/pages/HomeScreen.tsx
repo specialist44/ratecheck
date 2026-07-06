@@ -339,7 +339,7 @@ export function HomeScreen() {
                 <p className="text-xs text-muted-foreground mb-1.5">{t.labelCountrySub}</p>
                 <select value={country} onChange={(e) => setCountry(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm bg-background focus:outline-none focus:border-foreground/40 transition-all">
-                  <option>Türkiye</option><option>Almanya</option><option>İngiltere</option><option>Polonya</option><option>Fransa</option>
+                  <option value="Türkiye">{t.countryTurkiye}</option><option value="Almanya">{t.countryAlmanya}</option><option value="İngiltere">{t.countryIngiltere}</option><option value="Polonya">{t.countryPolonya}</option><option value="Fransa">{t.countryFransa}</option>
                 </select>
               </div>
               <div>
