@@ -23,4 +23,6 @@ export const COUNTRY_REGION: Record<string, Region> = {
 
 // variantIds: kategoriId -> mecra id (sadece cat.variants olan kategoriler için, bkz. data/packages/types.ts)
 // subItemIds: kategoriId -> seçilen alt kalem id listesi (sadece cat.subItems olan kategoriler için, çoklu seçim)
-export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[]; variantIds: Record<string, string>; subItemIds: Record<string, string[]> };
+// durationSeconds: sadece Animatör/Motion-VFX'te anlamlı (bkz. lib/durationPricing.ts),
+// diğer rollerde taşınır ama hiç okunmaz — hesaplama tarafında role göre gate'lidir.
+export type CalcInput = { roleId: string; experience: Experience; region: Region; currency: Currency; categoryIds: string[]; variantIds: Record<string, string>; subItemIds: Record<string, string[]>; durationSeconds: number };

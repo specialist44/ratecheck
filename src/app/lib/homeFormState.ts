@@ -1,4 +1,5 @@
 import type { Currency, Experience } from "../types";
+import { clampDurationSeconds } from "./durationPricing";
 
 const STORAGE_KEY = "ratecheck.homeForm";
 
@@ -14,6 +15,7 @@ export interface HomeFormState {
   selectedCategoryIds: string[];
   selectedVariantIds: Record<string, string>;
   selectedSubItemIds: Record<string, string[]>;
+  durationSeconds: number;
 }
 
 export function saveHomeFormState(state: HomeFormState) {
@@ -58,6 +60,7 @@ export function loadHomeFormState(): Partial<HomeFormState> {
         && Object.entries(parsed.selectedSubItemIds).every(([k, v]) => typeof k === "string" && Array.isArray(v) && v.every((id) => typeof id === "string"))
         ? parsed.selectedSubItemIds
         : undefined,
+      durationSeconds: typeof parsed.durationSeconds === "number" ? clampDurationSeconds(parsed.durationSeconds) : undefined,
     };
   } catch {
     return {};

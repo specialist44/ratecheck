@@ -9,6 +9,7 @@ import { getRoleLabel } from "../data/roles";
 import { getRoleCategories } from "../data/packages";
 import { resolveCategoryPrice, resolveSubItemsPrice, calculatePackageQuote } from "../lib/packagePricing";
 import { calculateRevisionFee, FREE_REVISIONS } from "../lib/revisionPricing";
+import { isDurationPricedRole, durationMultiplier } from "../lib/durationPricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
 import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
@@ -25,7 +26,7 @@ export function ResultsScreen() {
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds } = calcInputFromSearchParams(searchParams);
+  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds, durationSeconds } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [revisionCount, setRevisionCount] = useState(0);
   const [firstTwoFree, setFirstTwoFree] = useState(true);
@@ -68,10 +69,14 @@ export function ResultsScreen() {
     return true;
   };
   const selectedCategories = allCategories.filter((c) => categoryIds.includes(c.id) && isCategoryValid(c));
+  // Süre çarpanı SADECE Animatör/Motion-VFX'te uygulanır — bu tek gate, elle
+  // değiştirilmiş URL'de bile diğer 10 rolün fiyatının süreden etkilenmesini engeller.
+  const durationFactor = isDurationPricedRole(roleId) ? durationMultiplier(durationSeconds) : 1;
   const resolvePrice = (cat: (typeof allCategories)[number], r: Region) => {
-    if (cat.subItems) return resolveSubItemsPrice(cat.subItems, subItemIds[cat.id] ?? [], r, experience, currency);
-    const table = cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!;
-    return resolveCategoryPrice(table, r, experience, currency);
+    const raw = cat.subItems
+      ? resolveSubItemsPrice(cat.subItems, subItemIds[cat.id] ?? [], r, experience, currency)
+      : resolveCategoryPrice(cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!, r, experience, currency);
+    return raw * durationFactor;
   };
 
   // Rol için henüz paket verisi eklenmemiş (data/packages'te kaydı yok).

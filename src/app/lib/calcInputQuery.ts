@@ -1,5 +1,6 @@
 import type { Currency, Experience, Region } from "../types";
 import type { CalcInput } from "./pricing";
+import { DEFAULT_DURATION_SECONDS, clampDurationSeconds } from "./durationPricing";
 
 const EXPERIENCES: Experience[] = ["junior", "mid", "senior"];
 const REGIONS: Region[] = ["turkey", "eastern", "western"];
@@ -14,6 +15,7 @@ export function calcInputToSearchParams(input: CalcInput): URLSearchParams {
     categories: input.categoryIds.join(","),
     variants: Object.entries(input.variantIds).map(([catId, variantId]) => `${catId}:${variantId}`).join(","),
     subitems: Object.entries(input.subItemIds).filter(([, ids]) => ids.length > 0).map(([catId, ids]) => `${catId}:${ids.join("|")}`).join(","),
+    duration: String(input.durationSeconds),
   });
 }
 
@@ -49,5 +51,6 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
     categoryIds: categories ? categories.split(",").filter(Boolean) : [],
     variantIds,
     subItemIds,
+    durationSeconds: params.has("duration") ? clampDurationSeconds(Number(params.get("duration"))) : DEFAULT_DURATION_SECONDS,
   };
 }

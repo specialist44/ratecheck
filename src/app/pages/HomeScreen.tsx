@@ -7,6 +7,7 @@ import { ROLES_TR, ROLES_EN, ROLE_IDS, CHIPS_TR, CHIPS_EN, TOOLS_BY_ROLE_ID, TRA
 import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
+import { DEFAULT_DURATION_SECONDS, DURATION_PRESET_SECONDS, MIN_DURATION_SECONDS, MAX_DURATION_SECONDS, isDurationPricedRole, clampDurationSeconds } from "../lib/durationPricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
 import { loadHomeFormState, saveHomeFormState, clearHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
@@ -50,6 +51,15 @@ export function HomeScreen() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(saved.selectedCategoryIds ?? []);
   const [selectedVariantIds, setSelectedVariantIds] = useState<Record<string, string>>(saved.selectedVariantIds ?? {});
   const [selectedSubItemIds, setSelectedSubItemIds] = useState<Record<string, string[]>>(saved.selectedSubItemIds ?? {});
+  const [durationSeconds, setDurationSeconds] = useState<number>(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS);
+  const [durationMode, setDurationMode] = useState<"preset" | "custom">(
+    saved.durationSeconds && !(DURATION_PRESET_SECONDS as readonly number[]).includes(saved.durationSeconds) ? "custom" : "preset",
+  );
+  // Butonların görsel "aktif" hâli durationSeconds'tan AYRI takip edilir —
+  // aynı butona tekrar basınca sadece bu null olur (hiçbir buton işaretli
+  // görünmez), durationSeconds ise arka planda varsayılan 10sn'e döner.
+  const [selectedPresetSeconds, setSelectedPresetSeconds] = useState<number | null>(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS);
+  const [customDurationText, setCustomDurationText] = useState<string>(String(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS));
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [toolGroupIds, setToolGroupIds] = useState<("digital" | "traditional")[]>([]);
 
@@ -58,8 +68,19 @@ export function HomeScreen() {
   const hasToolGroups = MEDIUM_TOOL_GROUP_ROLE_IDS.includes(roleId);
 
   useEffect(() => {
-    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds });
-  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds]);
+    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds });
+  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds]);
+
+  // Süre sadece Animatör/Motion-VFX'te anlamlı — başka bir role geçince
+  // eski süre seçimi "hayalet" kalıp yanlışlıkla taşınmasın diye sıfırlanır.
+  useEffect(() => {
+    if (!isDurationPricedRole(roleId)) {
+      setDurationSeconds(DEFAULT_DURATION_SECONDS);
+      setDurationMode("preset");
+      setSelectedPresetSeconds(DEFAULT_DURATION_SECONDS);
+      setCustomDurationText(String(DEFAULT_DURATION_SECONDS));
+    }
+  }, [roleId]);
 
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
@@ -134,7 +155,8 @@ export function HomeScreen() {
 
   const hasAnySelection = !!roleId || experience !== "mid" || currency !== "EUR" || country !== "Türkiye"
     || selectedChips.length > 0 || selectedCategoryIds.length > 0 || toolGroupIds.length > 0
-    || Object.keys(selectedVariantIds).length > 0 || Object.keys(selectedSubItemIds).length > 0;
+    || Object.keys(selectedVariantIds).length > 0 || Object.keys(selectedSubItemIds).length > 0
+    || durationSeconds !== DEFAULT_DURATION_SECONDS;
 
   const resetAll = () => {
     setRoleId("");
@@ -146,6 +168,10 @@ export function HomeScreen() {
     setSelectedVariantIds({});
     setSelectedSubItemIds({});
     setToolGroupIds([]);
+    setDurationSeconds(DEFAULT_DURATION_SECONDS);
+    setDurationMode("preset");
+    setSelectedPresetSeconds(DEFAULT_DURATION_SECONDS);
+    setCustomDurationText(String(DEFAULT_DURATION_SECONDS));
     setAttemptedSubmit(false);
     clearHomeFormState();
   };
@@ -294,6 +320,58 @@ export function HomeScreen() {
               </div>
             )}
 
+            {/* Duration (role-specific, only Animator / Motion-VFX) */}
+            {isDurationPricedRole(roleId) && (
+              <div>
+                <label className="block text-sm font-semibold mb-0.5">{t.labelDuration}</label>
+                <p className="text-xs text-muted-foreground mb-1.5">{t.durationSub}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DURATION_PRESET_SECONDS.map((sec) => {
+                    const active = durationMode === "preset" && selectedPresetSeconds === sec;
+                    return (
+                      <button key={sec} type="button"
+                        onClick={() => {
+                          if (active) {
+                            // Aynı butona tekrar basılınca seçim iptal olur — hiçbir
+                            // buton işaretli görünmez, hesaplama varsayılan 10sn'e döner.
+                            setSelectedPresetSeconds(null);
+                            setDurationSeconds(DEFAULT_DURATION_SECONDS);
+                            return;
+                          }
+                          setDurationMode("preset");
+                          setSelectedPresetSeconds(sec);
+                          setDurationSeconds(sec);
+                          setCustomDurationText(String(sec));
+                        }}
+                        aria-pressed={active}
+                        className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${active ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                        {active && <Check size={10} className="inline mr-1 -mt-0.5" />}{sec}{t.durationUnit}
+                      </button>
+                    );
+                  })}
+                  <button type="button" onClick={() => setDurationMode("custom")} aria-pressed={durationMode === "custom"}
+                    className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${durationMode === "custom" ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
+                    {durationMode === "custom" && <Check size={10} className="inline mr-1 -mt-0.5" />}{t.durationCustomToggle}
+                  </button>
+                </div>
+                {durationMode === "custom" && (
+                  <div className="mt-2">
+                    <input
+                      type="number" min={MIN_DURATION_SECONDS} max={MAX_DURATION_SECONDS} value={customDurationText}
+                      onChange={(e) => setCustomDurationText(e.target.value)}
+                      onBlur={() => {
+                        const v = clampDurationSeconds(Number(customDurationText));
+                        setDurationSeconds(v);
+                        setCustomDurationText(String(v));
+                      }}
+                      placeholder={t.durationCustomPlaceholder}
+                      className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm bg-background focus:outline-none focus:border-foreground/40 focus:ring-2 focus:ring-foreground/10 transition-all" />
+                    <p className="text-[11px] text-muted-foreground mt-1">{t.durationCustomHint}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Required chips (sector, tools) */}
             <div>
               <label className="block text-sm font-semibold mb-1.5">{t.labelExtras}</label>
@@ -405,7 +483,11 @@ export function HomeScreen() {
               aria-disabled={!canCalculate}
               onClick={() => {
                 if (!canCalculate) { setAttemptedSubmit(true); return; }
-                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds, subItemIds: selectedSubItemIds };
+                // Kullanıcı "Kendi süreni gir" input'undayken blur olmadan Hesapla'ya
+                // basarsa, henüz commit edilmemiş (durationSeconds'a yansımamış)
+                // metni burada clamp'leyip kullan — state'in güncellenmesini beklemeye gerek yok.
+                const finalDurationSeconds = durationMode === "custom" ? clampDurationSeconds(Number(customDurationText)) : durationSeconds;
+                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds, subItemIds: selectedSubItemIds, durationSeconds: finalDurationSeconds };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>
