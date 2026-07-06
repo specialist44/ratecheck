@@ -47,6 +47,8 @@ export const EN: typeof TR = {
   resultCategoriesLabel: "Selected Categories",
   resultDiscountLabel: "Package discount",
   resultTotalLabel: "Fee to Request",
+  resultWhyFixedToggle: "Why a fixed number instead of a range?",
+  resultWhyFixedNote: "You already selected exactly which work, which region, and which experience level applies to you — this fixed number is a starting point calculated specifically for your situation. If we showed a range, an employer would always try to pick the lowest end. With a fixed number, you have a stronger starting point for negotiation.",
   resultComingSoonDesc: "Detailed pricing for this role is coming soon.",
   resultNoCategorySelected: "No category was selected.",
   pdfTitle: "Download this report as PDF",

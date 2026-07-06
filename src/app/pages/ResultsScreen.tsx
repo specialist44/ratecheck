@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { Download } from "lucide-react";
+import { Download, Info, ChevronDown } from "lucide-react";
 import type { Currency, Region } from "../types";
 import { useLang, useLangCtx } from "../i18n/LangContext";
 import { CUR_SYMBOL } from "../lib/pricing";
@@ -30,6 +30,7 @@ export function ResultsScreen() {
   const [logoError, setLogoError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [whyFixedOpen, setWhyFixedOpen] = useState(false);
 
   const handleLogoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -208,6 +209,20 @@ export function ResultsScreen() {
             <p className="text-[10px] uppercase tracking-widest text-background/50 mb-2">{t.resultTotalLabel}</p>
             <p className="text-4xl font-bold tracking-tight mb-1">{symbol}{Math.round(quote.total).toLocaleString(locale)}</p>
             <p className="text-sm text-background/50">{totalSub}</p>
+          </div>
+
+          <div className="mb-5 border border-border rounded-xl overflow-hidden">
+            <button onClick={() => setWhyFixedOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-muted/30 transition-colors">
+              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Info size={14} className="shrink-0" />
+                {t.resultWhyFixedToggle}
+              </span>
+              <ChevronDown size={14} className={`text-muted-foreground shrink-0 transition-transform ${whyFixedOpen ? "rotate-180" : ""}`} />
+            </button>
+            {whyFixedOpen && (
+              <p className="px-4 pb-4 text-xs text-muted-foreground leading-relaxed">{t.resultWhyFixedNote}</p>
+            )}
           </div>
 
           <div className="border-2 border-foreground rounded-2xl p-5 mb-4">

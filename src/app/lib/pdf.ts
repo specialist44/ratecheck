@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import interRegularFontUrl from "../../assets/fonts/Inter-Regular.ttf";
 import interBoldFontUrl from "../../assets/fonts/Inter-Bold.ttf";
+import rateCheckLogotypeUrl from "../../assets/rate-check-logotype-black-rgb.svg";
 import type { Lang, Region } from "../types";
 
 // jsPDF's built-in "helvetica" is a standard PDF font restricted to WinAnsi
@@ -85,6 +86,36 @@ const MM_PER_INCH = 25.4;
 // actually needs.
 const LOGO_MAX_RASTER_DIM = 1200;
 
+// RateCheck's own brand logo (fixed header mark, not the optional user upload
+// below). Rasterized once from the bundled SVG and cached on the module so
+// repeat downloads in the same session skip the redraw.
+const BRAND_LOGO_BOX_MM = { w: 42, h: 8 };
+let brandLogoReady: Promise<PdfLogo> | null = null;
+
+function ensureBrandLogoLoaded(): Promise<PdfLogo> {
+  if (!brandLogoReady) {
+    brandLogoReady = (async () => {
+      const img = await loadImageElement(rateCheckLogotypeUrl);
+      const ratio = (img.naturalWidth || img.width || 1) / (img.naturalHeight || img.height || 1);
+      const { w, h } = fitContain(
+        (BRAND_LOGO_BOX_MM.w / MM_PER_INCH) * LOGO_TARGET_DPI,
+        (BRAND_LOGO_BOX_MM.h / MM_PER_INCH) * LOGO_TARGET_DPI,
+        ratio,
+      );
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(w);
+      canvas.height = Math.round(h);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("canvas unsupported");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return { dataUrl: canvas.toDataURL("image/png"), ratio };
+    })();
+  }
+  return brandLogoReady;
+}
+
 // Both PNG and SVG uploads are redrawn onto a canvas so the PDF only ever needs
 // to embed a plain raster PNG (jsPDF's addImage has no native SVG support) and
 // so we always know the pixel aspect ratio for a distortion-free fit.
@@ -149,6 +180,7 @@ export async function downloadResultsPdf(params: {
   const { lang, role, expLabel, regionLabel, symbol, categories, discount, total, totalSub, regions, locale, logo } = params;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   await ensurePdfFontsLoaded(doc);
+  const brandLogo = await ensureBrandLogoLoaded();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const marginX = 20;
@@ -163,10 +195,10 @@ export async function downloadResultsPdf(params: {
     doc.addImage(logo.dataUrl, "PNG", boxX + (boxW - w) / 2, boxY + (boxH - h) / 2, w, h);
   }
 
-  doc.setFont("Inter", "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(20);
-  doc.text("RateCheck", marginX, y);
+  {
+    const { w, h } = fitContain(BRAND_LOGO_BOX_MM.w, BRAND_LOGO_BOX_MM.h, brandLogo.ratio);
+    doc.addImage(brandLogo.dataUrl, "PNG", marginX, y - h + 1, w, h);
+  }
 
   y += 7;
   doc.setFont("Inter", "normal");

@@ -48,6 +48,8 @@ export const TR = {
   resultCategoriesLabel: "Seçilen Kategoriler",
   resultDiscountLabel: "Paket indirimi",
   resultTotalLabel: "Talep Edilmesi Gereken Ücret",
+  resultWhyFixedToggle: "Neden aralık değil net bir rakam?",
+  resultWhyFixedNote: "Zaten hangi işleri yapacağını, hangi bölge ve deneyim seviyesinde olduğunu tek tek seçtin — bu net rakam, senin durumuna özel hesaplanmış bir başlangıç noktası. Bir aralık gösterseydik, işveren her zaman en düşük ucu seçmeye çalışırdı. Net bir rakamla, elinde daha güçlü bir pazarlık noktası oluyor.",
   resultComingSoonDesc: "Bu rol için detaylı fiyatlandırma yakında eklenecek.",
   resultNoCategorySelected: "En az bir kategori seçilmedi.",
   pdfTitle: "Bu raporu PDF olarak indir",
