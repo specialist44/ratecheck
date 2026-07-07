@@ -300,9 +300,10 @@ export function HomeScreen() {
                             <div className="flex flex-wrap gap-1.5">
                               {cat.subItems.map((subItem) => {
                                 const subItemChecked = (selectedSubItemIds[cat.id] ?? []).includes(subItem.id);
+                                const note = lang === "tr" ? subItem.note : subItem.noteEn;
                                 return (
                                   <button key={subItem.id} type="button" onClick={() => toggleSubItem(cat.id, subItem.id)}
-                                    aria-pressed={subItemChecked}
+                                    aria-pressed={subItemChecked} title={note}
                                     className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3 py-1.5 rounded-full border transition-all ${subItemChecked ? "border-foreground bg-foreground text-background font-medium" : "border-border hover:border-foreground/40 text-muted-foreground hover:text-foreground"}`}>
                                     {subItemChecked && <Check size={10} className="inline mr-1 -mt-0.5" />}{lang === "tr" ? subItem.label : subItem.labelEn}
                                   </button>

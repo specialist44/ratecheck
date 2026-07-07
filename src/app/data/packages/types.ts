@@ -21,6 +21,8 @@ export interface RoleCategorySubItem {
   id: string; // stabil slug (örn. "logo-animations")
   label: string; // TR
   labelEn: string; // EN
+  note?: string; // opsiyonel: bu kalemin doğal olarak içerdiği (ayrıca fiyatlandırılmayan) teknikler, TR
+  noteEn?: string; // EN
   price: PackagePriceTable;
 }
 

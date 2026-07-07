@@ -17,16 +17,6 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
       itemsEn: ["Kinetic Typography: Text synced to rhythm/audio", "Logo Intro/Outro animations", "Broadcast graphics: Lower thirds, titles, transitions", "Seamless loop Spotify Canvas or Instagram graphics"],
       subItems: [
         {
-          id: "logo-animations",
-          label: "Logo Animasyonları",
-          labelEn: "Logo Animations",
-          price: {
-            turkey: { junior: 29, mid: 47, senior: 67 },
-            eastern: { junior: 133, mid: 214, senior: 306 },
-            western: { junior: 341, mid: 550, senior: 786 },
-          },
-        },
-        {
           id: "ui-ux-lottie",
           label: "UI/UX ve Lottie Animasyonları",
           labelEn: "UI/UX & Lottie Animations",
@@ -40,6 +30,8 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "explainer-videos",
           label: "Açıklayıcı Videolar",
           labelEn: "Explainer Videos",
+          note: "Kinetik tipografi ve logo animasyonu dahildir",
+          noteEn: "Includes kinetic typography and logo animation",
           price: {
             turkey: { junior: 37, mid: 60, senior: 86 },
             eastern: { junior: 169, mid: 273, senior: 390 },
@@ -50,6 +42,8 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "social-media-ads",
           label: "Sosyal Medya ve Dijital Reklam Animasyonları",
           labelEn: "Social Media & Digital Ad Animations",
+          note: "Logo animasyonu ve kinetik tipografi dahildir",
+          noteEn: "Includes logo animation and kinetic typography",
           price: {
             turkey: { junior: 19, mid: 30, senior: 43 },
             eastern: { junior: 84, mid: 136, senior: 194 },
@@ -57,19 +51,11 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           },
         },
         {
-          id: "kinetic-typography",
-          label: "Kinetik Tipografi",
-          labelEn: "Kinetic Typography",
-          price: {
-            turkey: { junior: 27, mid: 43, senior: 61 },
-            eastern: { junior: 121, mid: 195, senior: 279 },
-            western: { junior: 310, mid: 500, senior: 715 },
-          },
-        },
-        {
           id: "broadcast-design",
           label: "Jenerik ve Yayın (Broadcast) Tasarımları",
           labelEn: "Broadcast Design",
+          note: "Logo animasyonu ve kinetik tipografi dahildir",
+          noteEn: "Includes logo animation and kinetic typography",
           price: {
             turkey: { junior: 37, mid: 60, senior: 86 },
             eastern: { junior: 169, mid: 273, senior: 390 },
@@ -90,6 +76,8 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "game-trailers-promos",
           label: "Oyun Fragmanları ve Promo Videoları",
           labelEn: "Game Trailers & Promos",
+          note: "Kinetik tipografi ve logo animasyonu dahildir",
+          noteEn: "Includes kinetic typography and logo animation",
           price: {
             turkey: { junior: 43, mid: 69, senior: 99 },
             eastern: { junior: 193, mid: 312, senior: 446 },
@@ -100,20 +88,12 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "stage-event-visuals",
           label: "Sahne ve Etkinlik Görselleri (Loop/VFX)",
           labelEn: "Stage & Event Visuals (Loop/VFX)",
+          note: "GIF ve mikro animasyon teknikleri dahildir",
+          noteEn: "Includes GIF and micro-animation techniques",
           price: {
             turkey: { junior: 21, mid: 34, senior: 49 },
             eastern: { junior: 97, mid: 156, senior: 223 },
             western: { junior: 248, mid: 400, senior: 572 },
-          },
-        },
-        {
-          id: "gif-micro-animations",
-          label: "GIF ve Mikro Animasyonlar",
-          labelEn: "GIF & Micro Animations",
-          price: {
-            turkey: { junior: 11, mid: 18, senior: 26 },
-            eastern: { junior: 51, mid: 82, senior: 117 },
-            western: { junior: 130, mid: 210, senior: 300 },
           },
         },
       ],
@@ -126,29 +106,11 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
       itemsEn: ["Compositing: Integrating CGI objects into live footage", "Rotoscoping and Paint: Removing unwanted objects/wires (cleanup)", "Chroma key cleanup and background replacement", "3D particle and destruction/fluid simulations"],
       subItems: [
         {
-          id: "compositing",
-          label: "Kompozitleme",
-          labelEn: "Compositing",
-          price: {
-            turkey: { junior: 32, mid: 51, senior: 73 },
-            eastern: { junior: 145, mid: 234, senior: 335 },
-            western: { junior: 372, mid: 600, senior: 858 },
-          },
-        },
-        {
-          id: "rotoscoping",
-          label: "Rotoskopi",
-          labelEn: "Rotoscoping",
-          price: {
-            turkey: { junior: 19, mid: 30, senior: 43 },
-            eastern: { junior: 84, mid: 136, senior: 194 },
-            western: { junior: 217, mid: 350, senior: 500 },
-          },
-        },
-        {
           id: "chroma-key-cleanup",
           label: "Yeşil/Mavi Ekran (Chroma Key) Temizleme",
           labelEn: "Chroma Key Cleanup",
+          note: "Kompozitleme tekniği dahildir",
+          noteEn: "Includes compositing technique",
           price: {
             turkey: { junior: 16, mid: 26, senior: 37 },
             eastern: { junior: 73, mid: 117, senior: 167 },
@@ -156,19 +118,11 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           },
         },
         {
-          id: "motion-tracking",
-          label: "Kamera ve Hareket Takibi (Motion Tracking/Matchmoving)",
-          labelEn: "Motion Tracking/Matchmoving",
-          price: {
-            turkey: { junior: 21, mid: 34, senior: 49 },
-            eastern: { junior: 97, mid: 156, senior: 223 },
-            western: { junior: 248, mid: 400, senior: 572 },
-          },
-        },
-        {
           id: "particle-dynamic-simulations",
           label: "Partikül ve Dinamik Simülasyonları",
           labelEn: "Particle & Dynamic Simulations",
+          note: "Kompozitleme ve kamera/hareket takibi dahildir",
+          noteEn: "Includes compositing and camera/motion tracking",
           price: {
             turkey: { junior: 40, mid: 64, senior: 92 },
             eastern: { junior: 181, mid: 292, senior: 418 },
@@ -179,6 +133,8 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "wire-rig-object-removal",
           label: "Nesne ve Kablo Silme (Wire/Rig/Object Removal)",
           labelEn: "Wire/Rig/Object Removal",
+          note: "Rotoskopi tekniği dahildir",
+          noteEn: "Includes rotoscoping technique",
           price: {
             turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 78, mid: 125, senior: 179 },
@@ -186,19 +142,11 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           },
         },
         {
-          id: "matte-painting",
-          label: "Matte Painting",
-          labelEn: "Matte Painting",
-          price: {
-            turkey: { junior: 37, mid: 60, senior: 86 },
-            eastern: { junior: 169, mid: 273, senior: 390 },
-            western: { junior: 434, mid: 700, senior: 1001 },
-          },
-        },
-        {
           id: "cgi-integration",
           label: "CGI (3D Nesne) Entegrasyonu",
           labelEn: "CGI Integration",
+          note: "Kompozitleme ve kamera/hareket takibi dahildir",
+          noteEn: "Includes compositing and camera/motion tracking",
           price: {
             turkey: { junior: 43, mid: 69, senior: 99 },
             eastern: { junior: 193, mid: 312, senior: 446 },
@@ -209,6 +157,8 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
           id: "set-extension",
           label: "Set Genişletme (Set Extension)",
           labelEn: "Set Extension",
+          note: "Kompozitleme, matte painting ve kamera/hareket takibi dahildir",
+          noteEn: "Includes compositing, matte painting, and camera/motion tracking",
           price: {
             turkey: { junior: 40, mid: 64, senior: 92 },
             eastern: { junior: 181, mid: 292, senior: 418 },
