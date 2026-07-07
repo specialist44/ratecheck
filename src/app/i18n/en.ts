@@ -22,6 +22,7 @@ export const EN: typeof TR = {
   categoryDetailsTitle: "What's included in this category?",
   categoryVariantLabel: "Which medium?",
   categorySubItemLabel: "Which items are included? (select multiple)",
+  mutualExclusionNotice: "{removed} removed — already covered by {kept}.",
   labelDuration: "Project Duration",
   durationSub: "Length of the animation clip. Price scales with it.",
   durationUnit: "s",

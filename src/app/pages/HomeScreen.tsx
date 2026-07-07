@@ -19,6 +19,19 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../components/ui/toolti
 const EMPTY_TOOLS: string[] = [];
 const ALL_TOOLS = new Set(Object.values(TOOLS_BY_ROLE_ID).flat());
 
+// Bazı kategoriler başka kategorilerin kapsamını zaten içeriyor (örn.
+// Cross-Platform, Native iOS + Android'in işini; Fullstack, Frontend +
+// Backend'in işini zaten kapsıyor) — ikisi birden seçilirse aynı iş çift
+// sayılır, bu yüzden biri seçilince diğerleri otomatik kaldırılır.
+const MUTUAL_EXCLUSIONS: Record<string, string[]> = {
+  "cross-platform": ["native-ios", "native-android"],
+  "native-ios": ["cross-platform"],
+  "native-android": ["cross-platform"],
+  "fullstack-developer": ["frontend-developer", "backend-developer"],
+  "frontend-developer": ["fullstack-developer"],
+  "backend-developer": ["fullstack-developer"],
+};
+
 // Prevents the row's own onClick (checkbox toggle) from firing when the
 // "Detaylar" link inside it is clicked, and keeps a >=44px touch target.
 function DialogTriggerButton({ checked, label }: { checked: boolean; label: string }) {
@@ -62,6 +75,7 @@ export function HomeScreen() {
   const [customDurationText, setCustomDurationText] = useState<string>(String(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS));
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [toolGroupIds, setToolGroupIds] = useState<("digital" | "traditional")[]>([]);
+  const [exclusionNotice, setExclusionNotice] = useState<string | null>(null);
 
   const tools = roleId ? TOOLS_BY_ROLE_ID[roleId] ?? EMPTY_TOOLS : EMPTY_TOOLS;
   const packageCategories = roleId ? getRoleCategories(roleId) : [];
@@ -85,6 +99,16 @@ export function HomeScreen() {
   useEffect(() => {
     setSelectedChips((prev) => prev.filter((c) => !ALL_TOOLS.has(c) || tools.includes(c)));
   }, [roleId]);
+
+  useEffect(() => {
+    setExclusionNotice(null);
+  }, [roleId]);
+
+  useEffect(() => {
+    if (!exclusionNotice) return;
+    const timer = setTimeout(() => setExclusionNotice(null), 6000);
+    return () => clearTimeout(timer);
+  }, [exclusionNotice]);
 
   useEffect(() => {
     if (!hasToolGroups) setToolGroupIds([]);
@@ -183,6 +207,19 @@ export function HomeScreen() {
         setSelectedSubItemIds((s) => { const next = { ...s }; delete next[id]; return next; });
         return p.filter((c) => c !== id);
       }
+      const conflicts = (MUTUAL_EXCLUSIONS[id] ?? []).filter((cid) => p.includes(cid));
+      if (conflicts.length > 0) {
+        setSelectedVariantIds((v) => { const next = { ...v }; conflicts.forEach((cid) => delete next[cid]); return next; });
+        setSelectedSubItemIds((s) => { const next = { ...s }; conflicts.forEach((cid) => delete next[cid]); return next; });
+        const kept = packageCategories.find((c) => c.id === id);
+        const removed = conflicts.map((cid) => packageCategories.find((c) => c.id === cid)).filter((c): c is NonNullable<typeof c> => !!c);
+        if (kept && removed.length > 0) {
+          const keptLabel = lang === "tr" ? kept.label : kept.labelEn;
+          const removedLabel = removed.map((c) => (lang === "tr" ? c.label : c.labelEn)).join(lang === "tr" ? " ve " : " and ");
+          setExclusionNotice(t.mutualExclusionNotice.replace("{kept}", keptLabel).replace("{removed}", removedLabel));
+        }
+        return [...p.filter((c) => !conflicts.includes(c)), id];
+      }
       return [...p, id];
     });
 
@@ -245,6 +282,13 @@ export function HomeScreen() {
                 <label className="block text-sm font-semibold mb-1.5">
                   {t.labelCategories} <span className="text-muted-foreground font-normal text-xs">{t.categoriesSub}</span>
                 </label>
+                {exclusionNotice && (
+                  <div className="mb-2 px-3 py-2 rounded-lg bg-muted border border-border text-xs text-muted-foreground flex items-start justify-between gap-2">
+                    <span>{exclusionNotice}</span>
+                    <button type="button" onClick={() => setExclusionNotice(null)} aria-label={lang === "tr" ? "Kapat" : "Close"}
+                      className="shrink-0 text-foreground/60 hover:text-foreground leading-none">×</button>
+                  </div>
+                )}
                 <div className="space-y-2">
                   {packageCategories.map((cat) => {
                     const checked = selectedCategoryIds.includes(cat.id);
