@@ -128,6 +128,7 @@ export const TR = {
   back: "Geri dön",
   notice: "Reklamlar sayesinde tamamen ücretsiz.",
   noticeLink: "Bizi desteklemek ister misiniz?",
+  noticeLinkSub: "(Patreon üzerinden, isteğe bağlı bağış)",
   footerTagline: "Freelancer ücretlerini adil belirlemenize yardımcı olur.",
   footerCopy: "© 2026 RateCheck. Tüm hakları saklıdır.",
 };

@@ -123,6 +123,7 @@ export const EN: typeof TR = {
   back: "Go back",
   notice: "Completely free thanks to ads.",
   noticeLink: "Would you like to support us?",
+  noticeLinkSub: "(Optional donation via Patreon)",
   footerTagline: "Helping freelancers set fair rates.",
   footerCopy: "© 2026 RateCheck. All rights reserved.",
 };

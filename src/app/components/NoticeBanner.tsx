@@ -5,7 +5,15 @@ export function NoticeBanner({ spacing = "mt-10" }: { spacing?: string }) {
   return (
     <div className={`${spacing} p-4 bg-muted rounded-xl`}>
       <p className="text-xs text-muted-foreground">{t.notice}{" "}
-        <span className="underline cursor-pointer text-foreground">{t.noticeLink}</span>
+        <a
+          href="https://www.patreon.com/RateCheck"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline cursor-pointer text-foreground"
+        >
+          {t.noticeLink}
+        </a>{" "}
+        <span className="text-muted-foreground">{t.noticeLinkSub}</span>
       </p>
     </div>
   );
