@@ -1,6 +1,7 @@
 import type { Currency, Experience, Region } from "../types";
 import type { CalcInput } from "./pricing";
 import { DEFAULT_DURATION_SECONDS, clampDurationSeconds } from "./durationPricing";
+import { clampScreenCount } from "./screenPricing";
 
 const EXPERIENCES: Experience[] = ["junior", "mid", "senior"];
 const REGIONS: Region[] = ["turkey", "eastern", "western"];
@@ -16,6 +17,7 @@ export function calcInputToSearchParams(input: CalcInput): URLSearchParams {
     variants: Object.entries(input.variantIds).map(([catId, variantId]) => `${catId}:${variantId}`).join(","),
     subitems: Object.entries(input.subItemIds).filter(([, ids]) => ids.length > 0).map(([catId, ids]) => `${catId}:${ids.join("|")}`).join(","),
     duration: String(input.durationSeconds),
+    screens: Object.entries(input.screenCounts).map(([catId, count]) => `${catId}:${count}`).join(","),
   });
 }
 
@@ -28,6 +30,7 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
   const categories = params.get("categories");
   const variants = params.get("variants");
   const subitems = params.get("subitems");
+  const screens = params.get("screens");
   const variantIds: Record<string, string> = {};
   if (variants) {
     for (const pair of variants.split(",").filter(Boolean)) {
@@ -43,6 +46,13 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
       if (catId && itemIds.length > 0) subItemIds[catId] = itemIds;
     }
   }
+  const screenCounts: Record<string, number> = {};
+  if (screens) {
+    for (const pair of screens.split(",").filter(Boolean)) {
+      const [catId, count] = pair.split(":");
+      if (catId && count) screenCounts[catId] = clampScreenCount(Number(count));
+    }
+  }
   return {
     roleId: params.get("roleId") ?? "",
     experience: EXPERIENCES.includes(experience as Experience) ? (experience as Experience) : "mid",
@@ -52,5 +62,6 @@ export function calcInputFromSearchParams(params: URLSearchParams): CalcInput {
     variantIds,
     subItemIds,
     durationSeconds: params.has("duration") ? clampDurationSeconds(Number(params.get("duration"))) : DEFAULT_DURATION_SECONDS,
+    screenCounts,
   };
 }

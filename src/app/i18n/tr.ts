@@ -22,6 +22,8 @@ export const TR = {
   categoryDetailsTitle: "Bu kategori neleri kapsıyor?",
   categoryVariantLabel: "Hangi mecra için?",
   categorySubItemLabel: "Hangi kalemler dahil? (birden fazla seçebilirsin)",
+  categoryScreenCountLabel: "Kaç ekran/sayfa tasarlanacak?",
+  categoryScreenCountHint: "İlk 3 ekran fiyata dahil, sonrası için ek ücret eklenir",
   mutualExclusionNotice: "{kept}, {removed} kapsamını zaten içerdiği için bu seçim(ler) kaldırıldı.",
   labelDuration: "Proje Süresi",
   durationSub: "Animasyon klibinin uzunluğu. Fiyat buna göre ölçeklenir.",

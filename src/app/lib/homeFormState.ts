@@ -1,5 +1,6 @@
 import type { Currency, Experience } from "../types";
 import { clampDurationSeconds } from "./durationPricing";
+import { clampScreenCount } from "./screenPricing";
 
 const STORAGE_KEY = "ratecheck.homeForm";
 
@@ -16,6 +17,7 @@ export interface HomeFormState {
   selectedVariantIds: Record<string, string>;
   selectedSubItemIds: Record<string, string[]>;
   durationSeconds: number;
+  selectedScreenCounts: Record<string, number>;
 }
 
 export function saveHomeFormState(state: HomeFormState) {
@@ -61,6 +63,10 @@ export function loadHomeFormState(): Partial<HomeFormState> {
         ? parsed.selectedSubItemIds
         : undefined,
       durationSeconds: typeof parsed.durationSeconds === "number" ? clampDurationSeconds(parsed.durationSeconds) : undefined,
+      selectedScreenCounts: parsed.selectedScreenCounts && typeof parsed.selectedScreenCounts === "object"
+        && Object.entries(parsed.selectedScreenCounts).every(([k, v]) => typeof k === "string" && typeof v === "number")
+        ? Object.fromEntries(Object.entries(parsed.selectedScreenCounts as Record<string, number>).map(([k, v]) => [k, clampScreenCount(v)]))
+        : undefined,
     };
   } catch {
     return {};

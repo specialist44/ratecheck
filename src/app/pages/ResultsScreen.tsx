@@ -10,6 +10,7 @@ import { getRoleCategories } from "../data/packages";
 import { resolveCategoryPrice, resolveSubItemsPrice, calculatePackageQuote } from "../lib/packagePricing";
 import { calculateRevisionFee, FREE_REVISIONS } from "../lib/revisionPricing";
 import { isDurationPricedRole, durationMultiplier } from "../lib/durationPricing";
+import { isScreenCountPricedCategory, extraScreenFee, DEFAULT_SCREEN_COUNT } from "../lib/screenPricing";
 import { calcInputFromSearchParams } from "../lib/calcInputQuery";
 import { clearHomeFormState } from "../lib/homeFormState";
 import { downloadResultsPdf, rasterizeLogoFile } from "../lib/pdf";
@@ -26,7 +27,7 @@ export function ResultsScreen() {
   const { lang } = useLangCtx();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds, durationSeconds } = calcInputFromSearchParams(searchParams);
+  const { roleId, experience, region, currency: initialCurrency, categoryIds, variantIds, subItemIds, durationSeconds, screenCounts } = calcInputFromSearchParams(searchParams);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [revisionCount, setRevisionCount] = useState(0);
   const [firstTwoFree, setFirstTwoFree] = useState(true);
@@ -76,7 +77,14 @@ export function ResultsScreen() {
     const raw = cat.subItems
       ? resolveSubItemsPrice(cat.subItems, subItemIds[cat.id] ?? [], r, experience, currency)
       : resolveCategoryPrice(cat.variants ? cat.variants.find((v) => v.id === variantIds[cat.id])!.price : cat.price!, r, experience, currency);
-    return raw * durationFactor;
+    // Ekran/sayfa sayısı fiyatı SADECE ui-design/information-architecture'da
+    // (isScreenCountPricedCategory ile gate'li) uygulanır — bkz. lib/screenPricing.ts.
+    // Süre çarpanının aksine bu ek ücret zaten currency'ye çevrilmiş halde
+    // eklenir, durationFactor'dan etkilenmez (iki mekanizma hiç kesişmiyor).
+    const screenFee = isScreenCountPricedCategory(roleId, cat.id)
+      ? extraScreenFee(cat.price!, r, experience, currency, screenCounts[cat.id] ?? DEFAULT_SCREEN_COUNT)
+      : 0;
+    return raw * durationFactor + screenFee;
   };
 
   // Rol için henüz paket verisi eklenmemiş (data/packages'te kaydı yok).
@@ -142,6 +150,10 @@ export function ResultsScreen() {
     if (cat.subItems) {
       const count = (subItemIds[id] ?? []).filter((sid) => cat.subItems!.some((s) => s.id === sid)).length;
       return `${base} — ${lang === "tr" ? `${count} kalem` : `${count} items`}`;
+    }
+    if (isScreenCountPricedCategory(roleId, id)) {
+      const count = screenCounts[id] ?? DEFAULT_SCREEN_COUNT;
+      return `${base} — ${lang === "tr" ? `${count} ekran` : `${count} screens`}`;
     }
     return base;
   };

@@ -8,6 +8,7 @@ import { getRoleCategories } from "../data/packages";
 import { CUR_SYMBOL, COUNTRY_REGION } from "../lib/pricing";
 import type { CalcInput } from "../lib/pricing";
 import { DEFAULT_DURATION_SECONDS, DURATION_PRESET_SECONDS, MIN_DURATION_SECONDS, MAX_DURATION_SECONDS, isDurationPricedRole, clampDurationSeconds } from "../lib/durationPricing";
+import { DEFAULT_SCREEN_COUNT, MIN_SCREEN_COUNT, isScreenCountPricedCategory, clampScreenCount } from "../lib/screenPricing";
 import { calcInputToSearchParams } from "../lib/calcInputQuery";
 import { loadHomeFormState, saveHomeFormState, clearHomeFormState } from "../lib/homeFormState";
 import { RESULTS_PATH, CATALOG_PATH } from "../routes";
@@ -73,6 +74,12 @@ export function HomeScreen() {
   // görünmez), durationSeconds ise arka planda varsayılan 10sn'e döner.
   const [selectedPresetSeconds, setSelectedPresetSeconds] = useState<number | null>(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS);
   const [customDurationText, setCustomDurationText] = useState<string>(String(saved.durationSeconds ?? DEFAULT_DURATION_SECONDS));
+  const [selectedScreenCounts, setSelectedScreenCounts] = useState<Record<string, number>>(saved.selectedScreenCounts ?? {});
+  // Kullanıcı input'a yazarken (henüz blur olmadan) selectedScreenCounts'a
+  // commit edilmemiş ham metni tutar — duration'daki customDurationText ile aynı desen.
+  const [screenCountText, setScreenCountText] = useState<Record<string, string>>(
+    () => Object.fromEntries(Object.entries(saved.selectedScreenCounts ?? {}).map(([id, n]) => [id, String(n)])),
+  );
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [toolGroupIds, setToolGroupIds] = useState<("digital" | "traditional")[]>([]);
   const [exclusionNotice, setExclusionNotice] = useState<string | null>(null);
@@ -82,8 +89,8 @@ export function HomeScreen() {
   const hasToolGroups = MEDIUM_TOOL_GROUP_ROLE_IDS.includes(roleId);
 
   useEffect(() => {
-    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds });
-  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds]);
+    saveHomeFormState({ roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds, selectedScreenCounts });
+  }, [roleId, experience, currency, country, selectedChips, selectedCategoryIds, selectedVariantIds, selectedSubItemIds, durationSeconds, selectedScreenCounts]);
 
   // Süre sadece Animatör/Motion-VFX'te anlamlı — başka bir role geçince
   // eski süre seçimi "hayalet" kalıp yanlışlıkla taşınmasın diye sıfırlanır.
@@ -157,6 +164,19 @@ export function HomeScreen() {
     });
   }, [roleId]);
 
+  // Ekran sayısı seçimleri de (roleId, kategoriId) çiftine bağlı — rol değişince
+  // artık ekran-sayısı-fiyatlı olmayan kategorilerin "hayalet" seçimi temizlenir.
+  useEffect(() => {
+    setSelectedScreenCounts((prev) => {
+      const next: Record<string, number> = {};
+      for (const [catId, count] of Object.entries(prev)) {
+        if (isScreenCountPricedCategory(roleId, catId)) next[catId] = count;
+      }
+      return next;
+    });
+    setScreenCountText({});
+  }, [roleId]);
+
   const toggleChip = (chip: string) =>
     setSelectedChips((p) => p.includes(chip) ? p.filter((c) => c !== chip) : [...p, chip]);
 
@@ -180,7 +200,7 @@ export function HomeScreen() {
   const hasAnySelection = !!roleId || experience !== "mid" || currency !== "EUR" || country !== "Türkiye"
     || selectedChips.length > 0 || selectedCategoryIds.length > 0 || toolGroupIds.length > 0
     || Object.keys(selectedVariantIds).length > 0 || Object.keys(selectedSubItemIds).length > 0
-    || durationSeconds !== DEFAULT_DURATION_SECONDS;
+    || durationSeconds !== DEFAULT_DURATION_SECONDS || Object.keys(selectedScreenCounts).length > 0;
 
   const resetAll = () => {
     setRoleId("");
@@ -196,6 +216,8 @@ export function HomeScreen() {
     setDurationMode("preset");
     setSelectedPresetSeconds(DEFAULT_DURATION_SECONDS);
     setCustomDurationText(String(DEFAULT_DURATION_SECONDS));
+    setSelectedScreenCounts({});
+    setScreenCountText({});
     setAttemptedSubmit(false);
     clearHomeFormState();
   };
@@ -355,6 +377,22 @@ export function HomeScreen() {
                               })}
                             </div>
                             {attemptedSubmit && (selectedSubItemIds[cat.id]?.length ?? 0) === 0 && <p className="text-[11px] text-red-500 mt-1.5">{t.requiredFieldWarning}</p>}
+                          </div>
+                        )}
+                        {checked && isScreenCountPricedCategory(roleId, cat.id) && (
+                          <div className="mt-2 ml-2 pl-3.5 border-l-2 border-border">
+                            <p className="text-xs font-medium text-muted-foreground mb-1.5">{t.categoryScreenCountLabel}</p>
+                            <input
+                              type="number" min={MIN_SCREEN_COUNT}
+                              value={screenCountText[cat.id] ?? String(selectedScreenCounts[cat.id] ?? DEFAULT_SCREEN_COUNT)}
+                              onChange={(e) => setScreenCountText((p) => ({ ...p, [cat.id]: e.target.value }))}
+                              onBlur={() => {
+                                const v = clampScreenCount(Number(screenCountText[cat.id] ?? selectedScreenCounts[cat.id] ?? DEFAULT_SCREEN_COUNT));
+                                setSelectedScreenCounts((p) => ({ ...p, [cat.id]: v }));
+                                setScreenCountText((p) => ({ ...p, [cat.id]: String(v) }));
+                              }}
+                              className="w-24 px-3 py-1.5 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground/40 focus:ring-2 focus:ring-foreground/10 transition-all" />
+                            <p className="text-[11px] text-muted-foreground mt-1">{t.categoryScreenCountHint}</p>
                           </div>
                         )}
                       </div>
@@ -532,7 +570,14 @@ export function HomeScreen() {
                 // basarsa, henüz commit edilmemiş (durationSeconds'a yansımamış)
                 // metni burada clamp'leyip kullan — state'in güncellenmesini beklemeye gerek yok.
                 const finalDurationSeconds = durationMode === "custom" ? clampDurationSeconds(Number(customDurationText)) : durationSeconds;
-                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds, subItemIds: selectedSubItemIds, durationSeconds: finalDurationSeconds };
+                // Ekran sayısı input'unda blur olmadan Hesapla'ya basılırsa, henüz
+                // selectedScreenCounts'a commit edilmemiş metni burada clamp'leyip kullan.
+                const finalScreenCounts: Record<string, number> = {};
+                for (const catId of selectedCategoryIds) {
+                  if (!isScreenCountPricedCategory(roleId, catId)) continue;
+                  finalScreenCounts[catId] = clampScreenCount(Number(screenCountText[catId] ?? selectedScreenCounts[catId] ?? DEFAULT_SCREEN_COUNT));
+                }
+                const input: CalcInput = { roleId, experience, currency, region: COUNTRY_REGION[country] ?? "eastern", categoryIds: selectedCategoryIds, variantIds: selectedVariantIds, subItemIds: selectedSubItemIds, durationSeconds: finalDurationSeconds, screenCounts: finalScreenCounts };
                 navigate(`${RESULTS_PATH}?${calcInputToSearchParams(input).toString()}`);
               }}
               className={`w-full mb-8 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canCalculate ? "bg-foreground text-background hover:opacity-85 active:scale-[0.99]" : "bg-foreground text-background opacity-40 cursor-not-allowed"}`}>
