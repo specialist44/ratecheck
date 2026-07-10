@@ -14,6 +14,7 @@ export const WRITER_CONTENT_CREATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 64, mid: 103, senior: 147 },
         eastern: { junior: 290, mid: 468, senior: 669 },
         western: { junior: 744, mid: 1200, senior: 1716 },
+        us: { junior: 632, mid: 1020, senior: 1459 },
       },
     },
     {
@@ -26,6 +27,7 @@ export const WRITER_CONTENT_CREATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 32, mid: 51, senior: 73 },
         eastern: { junior: 145, mid: 234, senior: 335 },
         western: { junior: 372, mid: 600, senior: 858 },
+        us: { junior: 316, mid: 510, senior: 729 },
       },
     },
   ],

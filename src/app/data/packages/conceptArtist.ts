@@ -21,6 +21,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 33, mid: 53, senior: 75 },
             eastern: { junior: 146, mid: 236, senior: 337 },
             western: { junior: 375, mid: 605, senior: 865 },
+            us: { junior: 319, mid: 514, senior: 735 },
           },
         },
         {
@@ -31,6 +32,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 35, mid: 57, senior: 81 },
             eastern: { junior: 157, mid: 254, senior: 363 },
             western: { junior: 404, mid: 651, senior: 931 },
+            us: { junior: 343, mid: 553, senior: 791 },
           },
         },
         {
@@ -41,6 +43,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 79, mid: 127, senior: 182 },
             western: { junior: 202, mid: 326, senior: 466 },
+            us: { junior: 172, mid: 277, senior: 396 },
           },
         },
         {
@@ -51,6 +54,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 23, mid: 36, senior: 52 },
             eastern: { junior: 101, mid: 163, senior: 234 },
             western: { junior: 260, mid: 419, senior: 599 },
+            us: { junior: 221, mid: 356, senior: 509 },
           },
         },
       ],
@@ -70,6 +74,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 25, mid: 40, senior: 57 },
             eastern: { junior: 112, mid: 181, senior: 259 },
             western: { junior: 288, mid: 465, senior: 665 },
+            us: { junior: 245, mid: 395, senior: 565 },
           },
         },
         {
@@ -80,6 +85,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 28, mid: 45, senior: 64 },
             eastern: { junior: 124, mid: 200, senior: 286 },
             western: { junior: 317, mid: 512, senior: 732 },
+            us: { junior: 269, mid: 435, senior: 622 },
           },
         },
         {
@@ -90,6 +96,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 79, mid: 127, senior: 182 },
             western: { junior: 202, mid: 326, senior: 466 },
+            us: { junior: 172, mid: 277, senior: 396 },
           },
         },
       ],
@@ -109,6 +116,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 20, mid: 32, senior: 46 },
             eastern: { junior: 90, mid: 145, senior: 207 },
             western: { junior: 231, mid: 372, senior: 532 },
+            us: { junior: 196, mid: 316, senior: 452 },
           },
         },
         {
@@ -119,6 +127,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 25, mid: 40, senior: 57 },
             eastern: { junior: 112, mid: 181, senior: 259 },
             western: { junior: 288, mid: 465, senior: 665 },
+            us: { junior: 245, mid: 395, senior: 565 },
           },
         },
         {
@@ -129,6 +138,7 @@ export const CONCEPT_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 28, mid: 45, senior: 64 },
             eastern: { junior: 124, mid: 200, senior: 286 },
             western: { junior: 317, mid: 512, senior: 732 },
+            us: { junior: 269, mid: 435, senior: 622 },
           },
         },
       ],

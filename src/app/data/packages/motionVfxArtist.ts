@@ -24,6 +24,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 13, mid: 21, senior: 30 },
             eastern: { junior: 58, mid: 94, senior: 134 },
             western: { junior: 149, mid: 240, senior: 343 },
+            us: { junior: 127, mid: 204, senior: 292 },
           },
         },
         {
@@ -36,6 +37,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 37, mid: 60, senior: 86 },
             eastern: { junior: 169, mid: 273, senior: 390 },
             western: { junior: 434, mid: 700, senior: 1001 },
+            us: { junior: 369, mid: 595, senior: 851 },
           },
         },
         {
@@ -48,6 +50,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 19, mid: 30, senior: 43 },
             eastern: { junior: 84, mid: 136, senior: 194 },
             western: { junior: 217, mid: 350, senior: 500 },
+            us: { junior: 184, mid: 298, senior: 425 },
           },
         },
         {
@@ -60,6 +63,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 37, mid: 60, senior: 86 },
             eastern: { junior: 169, mid: 273, senior: 390 },
             western: { junior: 434, mid: 700, senior: 1001 },
+            us: { junior: 369, mid: 595, senior: 851 },
           },
         },
         {
@@ -70,6 +74,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 48, mid: 77, senior: 110 },
             eastern: { junior: 218, mid: 351, senior: 502 },
             western: { junior: 558, mid: 900, senior: 1287 },
+            us: { junior: 474, mid: 765, senior: 1094 },
           },
         },
         {
@@ -82,6 +87,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 43, mid: 69, senior: 99 },
             eastern: { junior: 193, mid: 312, senior: 446 },
             western: { junior: 496, mid: 800, senior: 1144 },
+            us: { junior: 422, mid: 680, senior: 972 },
           },
         },
         {
@@ -94,6 +100,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 21, mid: 34, senior: 49 },
             eastern: { junior: 97, mid: 156, senior: 223 },
             western: { junior: 248, mid: 400, senior: 572 },
+            us: { junior: 211, mid: 340, senior: 486 },
           },
         },
       ],
@@ -115,6 +122,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 16, mid: 26, senior: 37 },
             eastern: { junior: 73, mid: 117, senior: 167 },
             western: { junior: 186, mid: 300, senior: 429 },
+            us: { junior: 158, mid: 255, senior: 365 },
           },
         },
         {
@@ -127,6 +135,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 40, mid: 64, senior: 92 },
             eastern: { junior: 181, mid: 292, senior: 418 },
             western: { junior: 465, mid: 750, senior: 1072 },
+            us: { junior: 395, mid: 638, senior: 911 },
           },
         },
         {
@@ -139,6 +148,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 17, mid: 28, senior: 40 },
             eastern: { junior: 78, mid: 125, senior: 179 },
             western: { junior: 198, mid: 320, senior: 458 },
+            us: { junior: 168, mid: 272, senior: 389 },
           },
         },
         {
@@ -151,6 +161,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 43, mid: 69, senior: 99 },
             eastern: { junior: 193, mid: 312, senior: 446 },
             western: { junior: 496, mid: 800, senior: 1144 },
+            us: { junior: 422, mid: 680, senior: 972 },
           },
         },
         {
@@ -163,6 +174,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 40, mid: 64, senior: 92 },
             eastern: { junior: 181, mid: 292, senior: 418 },
             western: { junior: 465, mid: 750, senior: 1072 },
+            us: { junior: 395, mid: 638, senior: 911 },
           },
         },
         {
@@ -173,6 +185,7 @@ export const MOTION_VFX_ARTIST_CATEGORIES: RoleCategorySet = {
             turkey: { junior: 13, mid: 21, senior: 30 },
             eastern: { junior: 58, mid: 94, senior: 134 },
             western: { junior: 149, mid: 240, senior: 343 },
+            us: { junior: 127, mid: 204, senior: 292 },
           },
         },
       ],

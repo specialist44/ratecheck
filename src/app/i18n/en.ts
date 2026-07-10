@@ -54,6 +54,7 @@ export const EN: typeof TR = {
   regionTurkey: "Türkiye",
   regionEastern: "Eastern Europe",
   regionWestern: "Western Europe",
+  regionUs: "United States",
   resultCategoriesLabel: "Selected Categories",
   resultDiscountLabel: "Package discount",
   resultFirstTwoFreeToggle: "First 2 revisions free",

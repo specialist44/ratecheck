@@ -55,6 +55,7 @@ export const TR = {
   regionTurkey: "Türkiye",
   regionEastern: "Doğu Avrupa",
   regionWestern: "Batı Avrupa",
+  regionUs: "Amerika",
   resultCategoriesLabel: "Seçilen Kategoriler",
   resultDiscountLabel: "Paket indirimi",
   resultFirstTwoFreeToggle: "İlk 2 revizyon ücretsiz",

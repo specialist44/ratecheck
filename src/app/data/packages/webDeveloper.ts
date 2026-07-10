@@ -14,6 +14,7 @@ export const WEB_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 301, mid: 486, senior: 695 },
         eastern: { junior: 670, mid: 1080, senior: 1544 },
         western: { junior: 1116, mid: 1800, senior: 2574 },
+        us: { junior: 1228, mid: 1980, senior: 2831 },
       },
     },
     {
@@ -26,6 +27,7 @@ export const WEB_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 251, mid: 405, senior: 579 },
         eastern: { junior: 558, mid: 900, senior: 1287 },
         western: { junior: 930, mid: 1500, senior: 2145 },
+        us: { junior: 1023, mid: 1650, senior: 2360 },
       },
     },
     {
@@ -38,6 +40,7 @@ export const WEB_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 586, mid: 945, senior: 1351 },
         eastern: { junior: 1302, mid: 2100, senior: 3003 },
         western: { junior: 2170, mid: 3500, senior: 5005 },
+        us: { junior: 2387, mid: 3850, senior: 5506 },
       },
     },
   ],

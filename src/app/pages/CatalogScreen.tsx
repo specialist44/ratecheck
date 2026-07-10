@@ -107,7 +107,7 @@ export function CatalogScreen() {
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 md:mb-1.5">{t.catalogRegion}</p>
               <div className="flex flex-wrap gap-2 md:gap-1.5">
-                {([["all", t.regionAll], ["turkey", t.regionTurkey], ["eastern", t.regionEastern], ["western", t.regionWestern]] as [Region|"all", string][]).map(([key, label]) => (
+                {([["all", t.regionAll], ["turkey", t.regionTurkey], ["eastern", t.regionEastern], ["western", t.regionWestern], ["us", t.regionUs]] as [Region|"all", string][]).map(([key, label]) => (
                   <button key={key} onClick={() => setRegion(key)} aria-pressed={region===key}
                     className={`relative after:absolute after:content-[''] after:-inset-[9px] text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-lg border font-medium transition-all ${region===key?"border-foreground bg-foreground text-background":"border-border text-muted-foreground hover:border-foreground/30"}`}>
                     {label}
@@ -151,8 +151,8 @@ export function CatalogScreen() {
           {region !== "all" && (
             <p className="text-xs text-muted-foreground mb-4 italic">
               {lang === "tr"
-                ? `Fiyatlar: ${[t.regionTurkey, t.regionEastern, t.regionWestern][["turkey","eastern","western"].indexOf(region)]} · ${[t.expJunior, t.expMid, t.expSenior][["junior","mid","senior"].indexOf(experience)]} seviye`
-                : `Prices: ${[t.regionTurkey, t.regionEastern, t.regionWestern][["turkey","eastern","western"].indexOf(region)]} · ${[t.expJunior, t.expMid, t.expSenior][["junior","mid","senior"].indexOf(experience)]} level`}
+                ? `Fiyatlar: ${[t.regionTurkey, t.regionEastern, t.regionWestern, t.regionUs][["turkey","eastern","western","us"].indexOf(region)]} · ${[t.expJunior, t.expMid, t.expSenior][["junior","mid","senior"].indexOf(experience)]} seviye`
+                : `Prices: ${[t.regionTurkey, t.regionEastern, t.regionWestern, t.regionUs][["turkey","eastern","western","us"].indexOf(region)]} · ${[t.expJunior, t.expMid, t.expSenior][["junior","mid","senior"].indexOf(experience)]} level`}
             </p>
           )}
 

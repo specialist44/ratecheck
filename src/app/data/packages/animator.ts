@@ -17,6 +17,7 @@ export const ANIMATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 33, mid: 53, senior: 76 },
         eastern: { junior: 150, mid: 242, senior: 346 },
         western: { junior: 384, mid: 620, senior: 887 },
+        us: { junior: 326, mid: 527, senior: 754 },
       },
     },
     {
@@ -29,6 +30,7 @@ export const ANIMATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 66, mid: 106, senior: 152 },
         eastern: { junior: 300, mid: 484, senior: 692 },
         western: { junior: 769, mid: 1240, senior: 1773 },
+        us: { junior: 654, mid: 1054, senior: 1507 },
       },
     },
     {
@@ -41,6 +43,7 @@ export const ANIMATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 41, mid: 66, senior: 94 },
         eastern: { junior: 187, mid: 302, senior: 432 },
         western: { junior: 480, mid: 775, senior: 1108 },
+        us: { junior: 408, mid: 659, senior: 942 },
       },
     },
     {
@@ -53,6 +56,7 @@ export const ANIMATOR_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 45, mid: 73, senior: 104 },
         eastern: { junior: 206, mid: 332, senior: 475 },
         western: { junior: 528, mid: 852, senior: 1218 },
+        us: { junior: 449, mid: 724, senior: 1035 },
       },
     },
   ],

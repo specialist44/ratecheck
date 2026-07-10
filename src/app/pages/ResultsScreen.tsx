@@ -20,7 +20,7 @@ import { BackButton } from "../components/BackButton";
 import { Footer } from "../components/Footer";
 import { NoticeBanner } from "../components/NoticeBanner";
 
-const REGION_KEYS: Region[] = ["turkey", "eastern", "western"];
+const REGION_KEYS: Region[] = ["turkey", "eastern", "western", "us"];
 
 export function ResultsScreen() {
   const t = useLang();
@@ -56,8 +56,12 @@ export function ResultsScreen() {
 
   const expLabel = experience === "junior" ? t.expJunior : experience === "mid" ? t.expMid : t.expSenior;
   const roleLabel = getRoleLabel(roleId, lang);
-  const regionLabel = region === "turkey" ? t.regionTurkey : region === "eastern" ? t.regionEastern : t.regionWestern;
-  const regionLabelFor = (r: Region) => r === "turkey" ? t.regionTurkey : r === "eastern" ? t.regionEastern : t.regionWestern;
+  // Record<Region,...> kullanılıyor — yeni bir Region eklenip burada unutulursa
+  // TypeScript "Property 'x' is missing" hatası verir (3'lü ternary'nin sessizce
+  // son dala düşmesinin aksine, bkz. audit raporu "us" batı ile karışıyordu).
+  const REGION_LABELS: Record<Region, string> = { turkey: t.regionTurkey, eastern: t.regionEastern, western: t.regionWestern, us: t.regionUs };
+  const regionLabelFor = (r: Region) => REGION_LABELS[r];
+  const regionLabel = regionLabelFor(region);
   const symbol = CUR_SYMBOL[currency];
   const locale = lang === "tr" ? "tr-TR" : "en-US";
 

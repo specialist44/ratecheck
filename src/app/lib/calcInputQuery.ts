@@ -4,7 +4,7 @@ import { DEFAULT_DURATION_SECONDS, clampDurationSeconds } from "./durationPricin
 import { clampScreenCount } from "./screenPricing";
 
 const EXPERIENCES: Experience[] = ["junior", "mid", "senior"];
-const REGIONS: Region[] = ["turkey", "eastern", "western"];
+const REGIONS: Region[] = ["turkey", "eastern", "western", "us"];
 const CURRENCIES: Currency[] = ["EUR", "TRY", "GBP"];
 
 export function calcInputToSearchParams(input: CalcInput): URLSearchParams {

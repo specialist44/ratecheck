@@ -14,6 +14,7 @@ export const MOBILE_APP_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 309, mid: 499, senior: 714 },
         eastern: { junior: 719, mid: 1160, senior: 1659 },
         western: { junior: 1240, mid: 2000, senior: 2860 },
+        us: { junior: 1364, mid: 2200, senior: 3146 },
       },
     },
     {
@@ -26,6 +27,7 @@ export const MOBILE_APP_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 279, mid: 450, senior: 644 },
         eastern: { junior: 647, mid: 1044, senior: 1493 },
         western: { junior: 1116, mid: 1800, senior: 2574 },
+        us: { junior: 1228, mid: 1980, senior: 2831 },
       },
     },
     {
@@ -38,6 +40,7 @@ export const MOBILE_APP_DEVELOPER_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 232, mid: 374, senior: 535 },
         eastern: { junior: 539, mid: 870, senior: 1244 },
         western: { junior: 930, mid: 1500, senior: 2145 },
+        us: { junior: 1023, mid: 1650, senior: 2360 },
       },
     },
   ],

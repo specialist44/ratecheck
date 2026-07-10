@@ -14,6 +14,7 @@ export const PRODUCTION_MEDIA_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 37, mid: 60, senior: 86 },
         eastern: { junior: 169, mid: 273, senior: 390 },
         western: { junior: 434, mid: 700, senior: 1001 },
+        us: { junior: 369, mid: 595, senior: 851 },
       },
     },
     {
@@ -26,6 +27,7 @@ export const PRODUCTION_MEDIA_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 27, mid: 43, senior: 61 },
         eastern: { junior: 121, mid: 195, senior: 279 },
         western: { junior: 310, mid: 500, senior: 715 },
+        us: { junior: 264, mid: 425, senior: 608 },
       },
     },
     {
@@ -38,6 +40,7 @@ export const PRODUCTION_MEDIA_CATEGORIES: RoleCategorySet = {
         turkey: { junior: 16, mid: 26, senior: 37 },
         eastern: { junior: 73, mid: 117, senior: 167 },
         western: { junior: 186, mid: 300, senior: 429 },
+        us: { junior: 158, mid: 255, senior: 365 },
       },
     },
   ],
